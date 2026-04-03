@@ -151,6 +151,8 @@ const Industries = () => (
                     <img
                       src={ind.image}
                       alt={ind.title}
+                      width={640}
+                      height={480}
                       className="w-full h-full object-cover"
                       style={{ filter: "brightness(0.7) saturate(0.5)" }}
                       loading="lazy"

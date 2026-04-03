@@ -82,6 +82,8 @@ const VideoCard = ({ src, poster, title, number, posterFilter }: VideoCardProps)
       <img
         src={poster}
         alt={title}
+        width={640}
+        height={360}
         className="absolute inset-0 w-full h-full object-cover"
         style={{
           opacity: playing ? 0 : 1,

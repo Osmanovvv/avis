@@ -32,6 +32,8 @@ const ProductCard = ({ product }: { product: Product }) => (
           src={product.image}
           srcSet={product.image1x ? `${product.image1x} 1x, ${product.image} 2x` : undefined}
           alt={product.name}
+          width={400}
+          height={300}
           className="w-full h-full object-cover card-img-industrial"
           loading="lazy"
           decoding="async"

@@ -75,6 +75,8 @@ const HeroSection = () => {
           <img
             src="/hero-poster.jpg"
             alt="Защита объектов от БПЛА. Антидроновые сетки АВИС"
+            width={1920}
+            height={1080}
             className="absolute inset-0 w-full h-full object-cover"
             style={{ filter: "saturate(0.35) brightness(0.32)", objectPosition: "center 20%" }}
           />

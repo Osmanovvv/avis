@@ -168,6 +168,8 @@ const Cases = () => {
                   <img
                     src={c.img}
                     alt={c.title}
+                    width={800}
+                    height={600}
                     loading="lazy"
                     decoding="async"
                     className={`w-full object-cover transition-transform duration-500 group-hover:scale-[1.03] ${
@@ -218,7 +220,7 @@ const Cases = () => {
           <div className="space-y-5 pt-1">
             {/* Large photo */}
             <div className="aspect-[16/9] overflow-hidden rounded-md">
-              <img src={selected.img} alt={selected.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+              <img src={selected.img} alt={selected.title} width={960} height={540} loading="lazy" decoding="async" className="h-full w-full object-cover" />
             </div>
 
             {/* Meta row */}

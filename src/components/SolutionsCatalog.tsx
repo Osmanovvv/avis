@@ -43,6 +43,8 @@ const SolutionsCatalog = () => (
                 src={p.image}
                 srcSet={`${p.image1x} 1x, ${p.image} 2x`}
                 alt={p.title}
+                width={400}
+                height={300}
                 className="absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover:brightness-[0.9] group-hover:saturate-[0.7] group-hover:scale-105"
                 style={{ filter: "brightness(0.6) saturate(0.5)" }}
                 loading="lazy"

@@ -1,0 +1,309 @@
+/* Inter — self-hosted variable font, weights 200–600, font-display: swap */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-cyrillic-wght-normal.woff2') format('woff2');
+  font-weight: 200 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-latin-wght-normal.woff2') format('woff2');
+  font-weight: 200 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122,
+    U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Hide scrollbar for horizontal scroll containers */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 18% 5%;        /* #0d0f12 */
+    --foreground: 228 18% 95%;       /* #f0f2f5 */
+
+    --card: 222 24% 10%;             /* #141720 */
+    --card-foreground: 220 16% 90%;  /* #dde3ea */
+
+    --popover: 222 24% 10%;
+    --popover-foreground: 228 18% 95%;
+
+    --primary: 228 18% 95%;          /* #f0f2f5 */
+    --primary-foreground: 220 18% 5%;
+
+    --secondary: 222 20% 14%;
+    --secondary-foreground: 228 18% 95%;
+
+    --muted: 222 18% 14%;
+    --muted-foreground: 216 12% 59%; /* #8a95a3 */
+
+    --accent: 210 18% 80%;           /* #c4cdd8 */
+    --accent-foreground: 220 18% 5%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --highlight: 207 36% 47%;        /* #4a7fa5 cold blue steel */
+    --gold: 43 85% 40%;              /* #b8860b dark gold */
+    --gold-light: 45 78% 46%;        /* #d4a017 */
+
+    --border: 0 0% 100% / 0.07;
+    --input: 0 0% 100% / 0.1;
+    --ring: 207 36% 47%;
+
+    --radius: 0.5rem;
+
+    /* Semantic text colors */
+    --text-body: 215 14% 73%;        /* #b0bac8 */
+    --text-secondary: 216 12% 59%;   /* #8a95a3 */
+    --text-card-desc: 216 10% 65%;   /* #9aa3af */
+    --text-label: 212 12% 47%;       /* #6b7a8a */
+    --text-nav: 210 18% 80%;         /* #c0cdd8 */
+    --text-h2: 216 14% 85%;          /* #d4dae2 */
+    --text-h3: 210 18% 80%;          /* #c4cdd8 */
+    --text-card-title: 216 16% 90%;  /* #dde3ea */
+    --text-footer: 215 12% 40%;      /* #5a6473 */
+    --text-input: 228 18% 95%;       /* #e8eaf0 */
+    --text-placeholder: 215 16% 34%; /* #4a5568 */
+
+    --steel: 216 12% 59%;
+    --steel-light: 210 18% 80%;
+    --navy: 220 18% 5%;
+    --navy-light: 222 24% 10%;
+
+    --sidebar-background: 220 18% 5%;
+    --sidebar-foreground: 228 18% 95%;
+    --sidebar-primary: 228 18% 95%;
+    --sidebar-primary-foreground: 220 18% 5%;
+    --sidebar-accent: 222 20% 14%;
+    --sidebar-accent-foreground: 228 18% 95%;
+    --sidebar-border: 0 0% 100% / 0.05;
+    --sidebar-ring: 207 36% 47%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    font-size: 14px;
+    line-height: 1.8;
+    color: hsl(var(--text-body));
+  }
+
+  /* Typography: light weight, wide tracking, uppercase headings */
+  h1 {
+    font-family: 'Inter', system-ui, sans-serif;
+    @apply font-light uppercase;
+    font-size: 32px;
+    letter-spacing: 0.08em;
+    line-height: 1.1;
+    color: hsl(var(--foreground));
+  }
+  @media (min-width: 768px) {
+    h1 { font-size: 40px; }
+  }
+  @media (min-width: 1024px) {
+    h1 { font-size: 72px; }
+  }
+
+  h2 {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 200;
+    text-transform: uppercase;
+    font-size: 28px;
+    letter-spacing: 0.06em;
+    color: hsl(var(--text-h2));
+  }
+  @media (min-width: 1024px) {
+    h2 { font-size: 40px; }
+  }
+
+  h3 {
+    font-family: 'Inter', system-ui, sans-serif;
+    @apply font-light uppercase;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    color: hsl(var(--text-h3));
+  }
+  @media (min-width: 1024px) {
+    h3 { font-size: 16px; }
+  }
+
+  h4 {
+    font-family: 'Inter', system-ui, sans-serif;
+    @apply text-xs font-light uppercase;
+    letter-spacing: 0.1em;
+    color: hsl(var(--text-label));
+  }
+
+  /* Selection */
+  ::selection {
+    background: rgba(74,127,165,0.3);
+    color: hsl(225 20% 93%);
+  }
+
+  /* Remove underlines from all links */
+  a { text-decoration: none; }
+}
+
+/* Hero fullscreen video */
+.hero-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.3) brightness(0.45);
+  z-index: 0;
+}
+
+/* Section dividers */
+.section-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.04);
+}
+
+/* Engineering grid background */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+.bg-grid-dense {
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Engineering line */
+.engineering-line {
+  height: 1px;
+  background: rgba(255,255,255,0.04);
+}
+
+/* Scrollbar: dark custom */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d0f12;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a3040;
+  border-radius: 2px;
+}
+
+/* Focus visible */
+:focus-visible {
+  outline: 2px solid hsl(207 36% 47%);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Decision table mobile cards */
+@media (max-width: 767px) {
+  .decision-table-desktop { display: none; }
+}
+@media (min-width: 768px) {
+  .decision-table-mobile { display: none; }
+}
+
+/* Grid drift animation for hero */
+@keyframes grid-drift {
+  0% { background-position: 0 0; }
+  100% { background-position: 80px 80px; }
+}
+
+/* Mobile overlay menu */
+.mobile-overlay-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: hsl(220 18% 5%);
+  overflow-y: auto;
+}
+
+/* Prevent horizontal scroll globally */
+#root {
+  overflow-x: hidden;
+}
+
+/* Noise texture overlay */
+.noise-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Card image filters */
+.card-img-industrial {
+  filter: brightness(0.75) saturate(0.5);
+  transition: filter 0.4s ease;
+}
+.group:hover .card-img-industrial {
+  filter: brightness(0.9) saturate(0.7);
+}
+
+/* CSS masonry via columns */
+@media (min-width: 768px) {
+  .md\:masonry-3 {
+    display: block;
+    columns: 3;
+    column-gap: 1rem;
+  }
+  .md\:masonry-3 > * {
+    break-inside: avoid;
+  }
+}
+
+/* Form inputs */
+input, textarea, select {
+  color: hsl(var(--text-input));
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+input::placeholder, textarea::placeholder {
+  color: hsl(var(--text-placeholder));
+}
+
+/* Mobile form inputs — prevent iOS zoom */
+@media (max-width: 767px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}

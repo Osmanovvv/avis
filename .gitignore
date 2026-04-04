@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 public/hero-video-original.mp4
+
+# Environment variables
+.env
+.env.local
+.env.production

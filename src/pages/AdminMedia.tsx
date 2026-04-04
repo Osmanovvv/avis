@@ -1,18 +1,17 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2, Upload, Image, Film } from "lucide-react";
+import { Trash2, Upload, Image, Film, Loader2 } from "lucide-react";
+import { api } from "@/lib/api";
 
 interface MediaFile {
-  id: string;
-  name: string;
-  type: "image" | "video";
-  size: number;
+  id: number;
+  filename: string;
+  original_name: string;
+  file_type: "image" | "video";
+  file_size: number;
   url: string;
 }
-
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
-const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 
 const formatSize = (bytes: number) => {
   if (bytes < 1024) return bytes + " B";
@@ -22,56 +21,77 @@ const formatSize = (bytes: number) => {
 
 const AdminMedia = () => {
   const [files, setFiles] = useState<MediaFile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const addFiles = useCallback((fileList: FileList) => {
-    setError("");
-    const newFiles: MediaFile[] = [];
+  useEffect(() => {
+    api.getMedia()
+      .then((data) => setFiles(data as MediaFile[]))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
-    Array.from(fileList).forEach((file) => {
+  const uploadFiles = useCallback(async (fileList: FileList) => {
+    setError("");
+    setUploading(true);
+
+    for (const file of Array.from(fileList)) {
       const isImage = file.type.startsWith("image/");
       const isVideo = file.type.startsWith("video/");
 
       if (!isImage && !isVideo) {
         setError("Допустимы только изображения и видео");
-        return;
+        continue;
       }
 
-      const maxSize = isImage ? MAX_IMAGE_SIZE : MAX_VIDEO_SIZE;
+      const maxSize = isImage ? 5 * 1024 * 1024 : 50 * 1024 * 1024;
       if (file.size > maxSize) {
         setError(`${file.name}: превышен лимит ${isImage ? "5MB" : "50MB"}`);
-        return;
+        continue;
       }
 
-      newFiles.push({
-        id: crypto.randomUUID(),
-        name: file.name,
-        type: isImage ? "image" : "video",
-        size: file.size,
-        url: URL.createObjectURL(file),
-      });
-    });
-
-    if (newFiles.length) {
-      setFiles((prev) => [...prev, ...newFiles]);
+      try {
+        const result = await api.uploadMedia(file);
+        setFiles((prev) => [
+          {
+            id: result.id,
+            filename: "",
+            original_name: file.name,
+            file_type: isImage ? "image" : "video",
+            file_size: file.size,
+            url: result.url,
+          },
+          ...prev,
+        ]);
+      } catch {
+        setError(`Ошибка загрузки ${file.name}`);
+      }
     }
+
+    setUploading(false);
   }, []);
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+    if (e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files);
   };
 
-  const handleDelete = (id: string) => {
-    setFiles((prev) => {
-      const file = prev.find((f) => f.id === id);
-      if (file) URL.revokeObjectURL(file.url);
-      return prev.filter((f) => f.id !== id);
-    });
+  const handleDelete = async (id: number) => {
+    try {
+      await api.deleteMedia(id);
+      setFiles((prev) => prev.filter((f) => f.id !== id));
+    } catch {
+      setError("Ошибка удаления");
+    }
   };
+
+  if (loading) {
+    return <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin" /> Загрузка...</div>;
+  }
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -89,9 +109,13 @@ const AdminMedia = () => {
               dragOver ? "border-accent bg-accent/5" : "border-border hover:border-muted-foreground"
             }`}
           >
-            <Upload className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+            {uploading ? (
+              <Loader2 className="w-8 h-8 mx-auto mb-3 text-muted-foreground animate-spin" />
+            ) : (
+              <Upload className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+            )}
             <p className="text-sm text-muted-foreground">
-              Перетащите файлы сюда или нажмите для выбора
+              {uploading ? "Загрузка..." : "Перетащите файлы сюда или нажмите для выбора"}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Фото до 5MB • Видео до 50MB
@@ -103,12 +127,9 @@ const AdminMedia = () => {
             accept="image/*,video/*"
             multiple
             className="hidden"
-            onChange={(e) => e.target.files && addFiles(e.target.files)}
+            onChange={(e) => e.target.files && uploadFiles(e.target.files)}
           />
           {error && <p className="text-sm text-red-500 mt-3">{error}</p>}
-          <p className="text-xs text-muted-foreground mt-3">
-            Файлы хранятся в текущей сессии браузера. Постоянное хранение будет доступно после подключения хранилища.
-          </p>
         </CardContent>
       </Card>
 
@@ -124,13 +145,14 @@ const AdminMedia = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {files.map((file) => (
                 <div key={file.id} className="relative group rounded-lg overflow-hidden border border-border">
-                  {/* Preview */}
                   <div className="aspect-[4/3] bg-muted">
-                    {file.type === "image" ? (
+                    {file.file_type === "image" ? (
                       <img
                         src={file.url}
-                        alt={file.name}
+                        alt={file.original_name}
                         className="w-full h-full object-cover"
+                        width={320}
+                        height={240}
                       />
                     ) : (
                       <video
@@ -141,17 +163,13 @@ const AdminMedia = () => {
                       />
                     )}
                   </div>
-
-                  {/* Info */}
                   <div className="p-2">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      {file.type === "image" ? <Image className="w-3 h-3" /> : <Film className="w-3 h-3" />}
-                      <span className="truncate flex-1">{file.name}</span>
+                      {file.file_type === "image" ? <Image className="w-3 h-3" /> : <Film className="w-3 h-3" />}
+                      <span className="truncate flex-1">{file.original_name}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{formatSize(file.size)}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{formatSize(file.file_size)}</p>
                   </div>
-
-                  {/* Delete button */}
                   <Button
                     variant="destructive"
                     size="icon"

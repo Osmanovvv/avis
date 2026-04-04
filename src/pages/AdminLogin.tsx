@@ -12,19 +12,18 @@ const AdminLogin = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      if (login(username, password)) {
-        navigate("/admin", { replace: true });
-      } else {
-        setError("Неверный логин или пароль");
-      }
-      setLoading(false);
-    }, 300);
+    const success = await login(username, password);
+    if (success) {
+      navigate("/admin", { replace: true });
+    } else {
+      setError("Неверный логин или пароль");
+    }
+    setLoading(false);
   };
 
   return (

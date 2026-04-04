@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check } from "lucide-react";
-
-const SETTINGS_KEY = "avis_settings";
+import { Check, Loader2 } from "lucide-react";
+import { api } from "@/lib/api";
 
 interface SeoFields {
   title: string;
@@ -32,43 +31,42 @@ const pages = [
 ];
 
 const defaultSettings: SiteSettings = {
-  phone: "+7 (XXX) XXX-XX-XX",
-  email: "info@avis.ru",
-  telegram: "@avis",
+  phone: "",
+  email: "",
+  telegram: "",
   address: "",
-  companyName: "ООО АВИС",
+  companyName: "",
   inn: "",
   ogrn: "",
-  seo: {
-    "/": { title: "Защита от БПЛА — сетки, ограждения, укрытия | АВИС", description: "Пассивная защита объектов от БПЛА: антидроновые сетки, бетонные ограждения, защитные шторы, убежища. Монтаж под ключ. 200+ объектов. Бесплатный аудит." },
-    "/solutions": { title: "Каталог средств защиты от БПЛА — антидроновые сетки, ограждения | АВИС", description: "Антидроновые сетки, бетонные ограждения, защитные шторы, роллеты, убежища. Изготовление от 5 дней, гарантия 3 года." },
-    "/industries": { title: "Защита предприятий от БПЛА — энергетика, транспорт, КИИ | АВИС", description: "Защита объектов энергетики, транспортной инфраструктуры и КИИ от угроз БПЛА. Аудит и монтаж." },
-    "/cases": { title: "Реализованные проекты защиты от БПЛА | АВИС", description: "Выполненные объекты: энергетика, транспорт, промышленность. 200+ защищённых объектов по России." },
-    "/about": { title: "О компании АВИС — производство защиты от БПЛА", description: "АВИС — производитель систем защиты объектов от БПЛА. 12 лет, 200+ объектов, собственное производство, гарантия 3 года." },
-    "/contacts": { title: "Контакты — запросить аудит защиты объекта | АВИС", description: "Позвоните или напишите в Telegram. Ответим в течение 2 часов. Бесплатный аудит объекта." },
-  },
+  seo: {},
 };
 
-function getSettings(): SiteSettings {
-  const stored = localStorage.getItem(SETTINGS_KEY);
-  if (stored) {
-    try {
-      return { ...defaultSettings, ...JSON.parse(stored) };
-    } catch {
-      return defaultSettings;
-    }
-  }
-  return defaultSettings;
-}
-
 const AdminSettings = () => {
-  const [settings, setSettings] = useState<SiteSettings>(getSettings);
+  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const handleSave = () => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  useEffect(() => {
+    api.getSettings()
+      .then((data: any) => {
+        setSettings({ ...defaultSettings, ...data });
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await api.updateSettings(settings);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      alert("Ошибка сохранения");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const update = (field: keyof Omit<SiteSettings, "seo">, value: string) => {
@@ -82,17 +80,27 @@ const AdminSettings = () => {
     }));
   };
 
+  if (loading) {
+    return <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin" /> Загрузка...</div>;
+  }
+
+  const SaveButton = () => (
+    <Button onClick={handleSave} className="min-w-[140px]" disabled={saving}>
+      {saving ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : saved ? (
+        <span className="flex items-center gap-2"><Check className="w-4 h-4" /> Сохранено</span>
+      ) : (
+        "Сохранить"
+      )}
+    </Button>
+  );
+
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-light">Настройки</h1>
-        <Button onClick={handleSave} className="min-w-[140px]">
-          {saved ? (
-            <span className="flex items-center gap-2"><Check className="w-4 h-4" /> Сохранено</span>
-          ) : (
-            "Сохранить"
-          )}
-        </Button>
+        <SaveButton />
       </div>
 
       {/* Company info */}
@@ -167,15 +175,8 @@ const AdminSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Bottom save */}
       <div className="flex justify-end pb-8">
-        <Button onClick={handleSave} className="min-w-[140px]">
-          {saved ? (
-            <span className="flex items-center gap-2"><Check className="w-4 h-4" /> Сохранено</span>
-          ) : (
-            "Сохранить"
-          )}
-        </Button>
+        <SaveButton />
       </div>
     </div>
   );

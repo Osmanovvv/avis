@@ -157,12 +157,12 @@ const About = () => {
       <section style={{ background: "#090b0e" }}>
         <div className="container pt-[72px] pb-[72px] lg:pt-[100px] lg:pb-[100px]">
           <FadeIn>
-            <h3
+            <h2
               className="text-[11px] uppercase tracking-[0.12em] text-center mb-12"
               style={{ color: "#4a5568" }}
             >
               Реализованные объекты
-            </h3>
+            </h2>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-6 text-center">
             {stats.map((s, i) => (
@@ -257,12 +257,12 @@ const About = () => {
       <section style={{ background: "#090b0e" }}>
         <div className="container pt-[72px] pb-[72px] lg:pt-[100px] lg:pb-[100px]">
           <FadeIn>
-            <h3
+            <h2
               className="text-[20px] font-extralight text-center mb-12"
               style={{ color: "#c0cdd8" }}
             >
               ПАРТНЁРЫ И КЛИЕНТЫ
-            </h3>
+            </h2>
           </FadeIn>
           {/* TODO: Replace placeholders with real partner logos */}
           <FadeIn delay={0.08}>

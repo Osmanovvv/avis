@@ -1,12 +1,14 @@
 import { Helmet } from "react-helmet-async";
 
 const DOMAIN = "https://drone-shield-system.lovable.app";
+const OG_IMAGE = `${DOMAIN}/hero-poster.jpg`;
 
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "АВИС",
   "url": DOMAIN,
+  "logo": `${DOMAIN}/favicon.svg`,
   "description": "Производитель систем пассивной защиты объектов от БПЛА",
   "areaServed": "RU",
   "serviceType": "Защита от БПЛА",
@@ -26,18 +28,8 @@ const buildBreadcrumbJsonLd = (path: string, title: string) => ({
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Главная",
-      "item": DOMAIN,
-    },
-    {
-      "@type": "ListItem",
-      "position": 2,
-      "name": title,
-      "item": `${DOMAIN}${path}`,
-    },
+    { "@type": "ListItem", "position": 1, "name": "Главная", "item": DOMAIN },
+    { "@type": "ListItem", "position": 2, "name": title, "item": `${DOMAIN}${path}` },
   ],
 });
 
@@ -53,7 +45,6 @@ interface SEOProps {
 
 const SEO = ({ title, description, path, keywords, ogTitle, ogDescription, ogType = "website" }: SEOProps) => {
   const canonical = `${DOMAIN}${path}`;
-  const image = `${DOMAIN}/hero-poster.jpg`;
   const isHome = path === "/";
   const jsonLd = isHome ? organizationJsonLd : buildBreadcrumbJsonLd(path, title);
 
@@ -69,11 +60,11 @@ const SEO = ({ title, description, path, keywords, ogTitle, ogDescription, ogTyp
       <meta property="og:description" content={ogDescription || description} />
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={canonical} />
-      <meta property="og:image" content={image} />
+      <meta property="og:image" content={OG_IMAGE} />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={ogTitle || title} />
       <meta name="twitter:description" content={ogDescription || description} />
-      <meta name="twitter:image" content={image} />
+      <meta name="twitter:image" content={OG_IMAGE} />
       <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
     </Helmet>
   );

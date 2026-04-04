@@ -1,19 +1,28 @@
+import { api } from "./api";
+
 const TOKEN_KEY = "avis_admin_token";
 const TOKEN_EXPIRY_KEY = "avis_admin_token_expiry";
-const TOKEN_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000; // 7 дней
+const IS_MOCK = !import.meta.env.VITE_API_URL;
 
-export function login(username: string, password: string): boolean {
-  const envPassword = import.meta.env.VITE_ADMIN_PASSWORD || "admin";
-  const envUsername = import.meta.env.VITE_ADMIN_USERNAME || "admin";
-
-  if (username === envUsername && password === envPassword) {
-    const expiry = Date.now() + TOKEN_LIFETIME_MS;
-    const token = btoa(JSON.stringify({ user: username, exp: expiry }));
+export async function login(username: string, password: string): Promise<boolean> {
+  try {
+    if (IS_MOCK) {
+      const validUser = username === (import.meta.env.VITE_ADMIN_USERNAME || "admin");
+      const validPass = password === (import.meta.env.VITE_ADMIN_PASSWORD || "admin");
+      if (!validUser || !validPass) return false;
+      const expiry = Date.now() + 7 * 24 * 60 * 60 * 1000;
+      localStorage.setItem(TOKEN_KEY, "mock_token");
+      localStorage.setItem(TOKEN_EXPIRY_KEY, String(expiry));
+      return true;
+    }
+    const { token } = await api.login(username, password);
+    const expiry = Date.now() + 7 * 24 * 60 * 60 * 1000;
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(TOKEN_EXPIRY_KEY, String(expiry));
     return true;
+  } catch {
+    return false;
   }
-  return false;
 }
 
 export function isAuthenticated(): boolean {

@@ -180,9 +180,9 @@ const Cases = () => {
                     <Badge variant="secondary" className="w-fit text-[10px] mb-2">
                       {c.sectorLabel}
                     </Badge>
-                    <h3 className="text-[15px] font-semibold text-primary-foreground leading-snug">
+                    <h2 className="text-[15px] font-semibold text-primary-foreground leading-snug">
                       {c.title}
-                    </h3>
+                    </h2>
                     <div className="flex items-center gap-3 mt-1.5 text-[12px] text-primary-foreground/80">
                       <span className="flex items-center gap-1">
                         <MapPin className="h-3 w-3" />

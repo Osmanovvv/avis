@@ -26,11 +26,31 @@ const QuickFormModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (
 
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (digits.length !== 10) { setError("Введите 10 цифр номера"); return; }
     setLoading(true);
-    setTimeout(() => { setLoading(false); setDone(true); }, 1200);
+    try {
+      const token = import.meta.env.VITE_TG_BOT_TOKEN;
+      const chatId = import.meta.env.VITE_TG_CHAT_ID;
+      if (!token || !chatId || token === "your_bot_token") {
+        setDone(true);
+        return;
+      }
+      const text = [
+        "📩 *Новая заявка с сайта*",
+        `📞 Телефон: +7${digits}`,
+        `📄 Страница: обратный звонок (popup)`,
+        `🕐 ${new Date().toLocaleString("ru-RU")}`,
+      ].join("\n");
+      const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
+      });
+      if (res.ok) { setDone(true); } else { setError("Ошибка отправки"); }
+    } catch { setError("Ошибка отправки"); }
+    finally { setLoading(false); }
   };
 
   const handleClose = (v: boolean) => {

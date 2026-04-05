@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useLayoutEffect, useRef } from "react";
 import { Phone, X, MessageSquare, PhoneCall } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,9 +7,9 @@ import { Link } from "react-router-dom";
 
 function formatPhone(digits: string): string {
   const d = digits.slice(0, 10);
-  let r = "+7";
-  if (!d.length) return r;
-  r += " (" + d.slice(0, 3);
+  if (d.length === 0) return "+7 ";
+  let r = "+7 (";
+  r += d.slice(0, 3);
   if (d.length >= 3) r += ") "; else return r;
   r += d.slice(3, 6);
   if (d.length >= 6) r += "-"; else return r;
@@ -23,8 +23,38 @@ const QuickFormModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (
   const [digits, setDigits] = useState("");
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
-
   const [loading, setLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const displayValue = formatPhone(digits);
+
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (el && el === document.activeElement && displayValue) {
+      const len = displayValue.length;
+      el.setSelectionRange(len, len);
+    }
+  }, [displayValue]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      setDigits(prev => prev.slice(0, -1));
+      if (error) setError("");
+    } else if (/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+      setDigits(prev => prev.length < 10 ? prev + e.key : prev);
+      if (error) setError("");
+    }
+  }, [error]);
+
+  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    let d = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (d.length >= 11 && (d[0] === "7" || d[0] === "8")) d = d.slice(1);
+    setDigits(d.slice(0, 10));
+    if (error) setError("");
+  }, [error]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,18 +105,16 @@ const QuickFormModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (
             <div className="relative">
               <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
+                ref={inputRef}
                 type="tel"
-                inputMode="numeric"
+                inputMode="tel"
                 placeholder="+7 (900) 123-45-67"
                 aria-label="Телефон"
-                value={digits.length > 0 ? formatPhone(digits) : ""}
-                onChange={(e) => {
-                  let raw = e.target.value.replace(/\D/g, "");
-                  if (raw.startsWith("7") || raw.startsWith("8")) raw = raw.slice(1);
-                  setDigits(raw.slice(0, 10));
-                  if (error) setError("");
-                }}
-                autoComplete="tel"
+                value={displayValue}
+                onChange={() => {}}
+                onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
+                autoComplete="off"
                 className="w-full h-[52px] rounded-md pl-10 pr-4 text-[16px] text-foreground focus:outline-none transition-all"
                 style={{
                   background: "#0d0f12",

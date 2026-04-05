@@ -200,7 +200,7 @@ const Header = () => {
                     <Link
                       to={item.path}
                       onClick={() => setMobileOpen(false)}
-                      className="block flex items-center transition-colors"
+                      className="flex items-center transition-colors"
                       style={{
                         fontSize: "24px",
                         fontWeight: 200,
@@ -224,12 +224,12 @@ const Header = () => {
               className="px-8 pb-10 space-y-4 flex-shrink-0"
             >
               <a
-                href="tel:+70000000000"
+                href={`tel:${import.meta.env.VITE_PHONE || "+70000000000"}`}
                 className="flex items-center gap-2.5 text-[16px] font-light tracking-wide no-underline"
                 style={{ color: "#c0cdd8" }}
               >
                 <Phone className="h-4 w-4 text-highlight" />
-                +7 (000) 000-00-00
+                {(import.meta.env.VITE_PHONE || "+70000000000").replace(/\+?(\d)(\d{3})(\d{3})(\d{2})(\d{2})/, "+$1 ($2) $3-$4-$5")}
               </a>
               <Link to="/contacts" onClick={() => setMobileOpen(false)}>
                 <button

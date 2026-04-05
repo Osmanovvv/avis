@@ -9,11 +9,15 @@ const navLinks = [
   { label: "Контакты", path: "/contacts" },
 ];
 
+const phone = import.meta.env.VITE_PHONE || "+70000000000";
+const telegram = import.meta.env.VITE_TELEGRAM || "username";
+const email = import.meta.env.VITE_EMAIL || "info@example.com";
+
 const contacts = [
-  { icon: Phone, text: "[ТЕЛЕФОН]", href: "tel:+70000000000", highlight: false },
-  { icon: Mail, text: "[EMAIL]", href: "mailto:info@example.com", highlight: false },
+  { icon: Phone, text: phone.replace(/\+?(\d)(\d{3})(\d{3})(\d{2})(\d{2})/, "+$1 ($2) $3-$4-$5"), href: `tel:${phone}`, highlight: false },
+  { icon: Mail, text: email, href: `mailto:${email}`, highlight: false },
   { icon: MapPin, text: "[АДРЕС]", href: undefined, highlight: false },
-  { icon: Send, text: "@[TELEGRAM]", href: "https://t.me/username", highlight: true },
+  { icon: Send, text: `@${telegram}`, href: `https://t.me/${telegram}`, highlight: true },
 ];
 
 const Footer = () => {

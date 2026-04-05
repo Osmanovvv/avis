@@ -104,6 +104,8 @@ const VideoCard = ({ src, poster, title, number, posterFilter }: VideoCardProps)
       {!playing && (
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
+          role="button"
+          aria-label="Воспроизвести видео"
           style={{
             width: btnSize,
             height: btnSize,
@@ -127,11 +129,13 @@ const VideoCard = ({ src, poster, title, number, posterFilter }: VideoCardProps)
           onClick={handlePause}
           onTouchEnd={handlePause}
           className="absolute flex items-center justify-center"
+          role="button"
+          aria-label="Пауза"
           style={{
-            top: 12,
-            right: 12,
-            width: 28,
-            height: 28,
+            top: 8,
+            right: 8,
+            width: 44,
+            height: 44,
             borderRadius: "50%",
             background: "rgba(8,10,14,0.55)",
             cursor: "pointer",

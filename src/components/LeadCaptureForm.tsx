@@ -18,17 +18,17 @@ const LeadCaptureForm = () => {
           >
             Готовы защитить ваш объект?
           </h2>
-          <p className="mt-3" style={{ fontSize: 14, color: "#6b7280", margin: 0, marginTop: 12 }}>
+          <p className="mt-3" style={{ fontSize: 14, color: "#8a95a3", margin: 0, marginTop: 12 }}>
             Свяжитесь удобным способом. Ответим в течение 2 часов.
           </p>
         </FadeIn>
 
         <FadeIn delay={0.1}>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-8">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4 mt-8">
             {/* Primary — Call */}
             <a
               href="tel:+70000000000"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-md h-[52px] px-9 text-[13px] font-semibold uppercase tracking-[0.08em] transition-all duration-200 hover:brightness-110 no-underline"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-md h-[52px] px-9 text-[13px] font-semibold uppercase tracking-[0.08em] transition-all duration-200 hover:brightness-110 no-underline"
               style={{
                 background: "linear-gradient(135deg, #b8860b, #d4a017)",
                 color: "#0a0c0f",
@@ -44,7 +44,7 @@ const LeadCaptureForm = () => {
               href="https://t.me/username"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-md h-[52px] px-9 text-[13px] font-semibold uppercase tracking-[0.08em] transition-all duration-200 no-underline"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-md h-[52px] px-9 text-[13px] font-semibold uppercase tracking-[0.08em] transition-all duration-200 no-underline"
               style={{
                 background: "transparent",
                 border: "1px solid rgba(74,127,165,0.4)",
@@ -67,7 +67,7 @@ const LeadCaptureForm = () => {
             </a>
           </div>
 
-          <p className="mt-5" style={{ fontSize: 12, color: "#4a5568", margin: 0, marginTop: 20 }}>
+          <p className="mt-5" style={{ fontSize: 12, color: "#8a95a3", margin: 0, marginTop: 20 }}>
             или напишите на{" "}
             <a
               href="mailto:info@example.com"

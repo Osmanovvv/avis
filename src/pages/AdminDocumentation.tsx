@@ -18,7 +18,6 @@ const DOC_SECTIONS = [
 - **UI Kit**: shadcn/ui (default style, HSL CSS variables)
 - **Animations**: framer-motion 12
 - **Routing**: react-router-dom 6 (BrowserRouter)
-- **State / Fetching**: @tanstack/react-query 5
 - **Forms**: react-hook-form + zod + @hookform/resolvers
 - **Icons**: lucide-react 0.462
 - **Toasts**: sonner + radix toast

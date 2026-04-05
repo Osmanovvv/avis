@@ -30,10 +30,10 @@ const Footer = () => {
             >
               АВИС
             </span>
-            <p className="mt-2 max-w-[200px]" style={{ fontSize: 13, color: "#4a5568" }}>
+            <p className="mt-2 max-w-[200px]" style={{ fontSize: 13, color: "#8a95a3" }}>
               Инженерная защита объектов от БПЛА
             </p>
-            <p className="mt-1" style={{ fontSize: 11, color: "#374151" }}>
+            <p className="mt-1" style={{ fontSize: 11, color: "#6b7280" }}>
               Пассивная защита. Производство. Монтаж.
             </p>
           </div>
@@ -42,7 +42,7 @@ const Footer = () => {
           <div className="order-2 md:order-3">
             <h4
               className="mb-4 uppercase"
-              style={{ fontSize: 10, letterSpacing: "0.12em", color: "#374151" }}
+              style={{ fontSize: 10, letterSpacing: "0.12em", color: "#6b7280" }}
             >
               Контакты
             </h4>
@@ -63,6 +63,7 @@ const Footer = () => {
                         href={c.href}
                         target={c.href.startsWith("http") ? "_blank" : undefined}
                         rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                        aria-label={c.text}
                         className="transition-colors duration-200 hover:[&_span]:text-[#c0cdd8]"
                       >
                         {inner}
@@ -80,7 +81,7 @@ const Footer = () => {
           <div className="order-3 md:order-2">
             <h4
               className="mb-4 uppercase"
-              style={{ fontSize: 10, letterSpacing: "0.12em", color: "#374151" }}
+              style={{ fontSize: 10, letterSpacing: "0.12em", color: "#6b7280" }}
             >
               Навигация
             </h4>
@@ -90,7 +91,7 @@ const Footer = () => {
                   <Link
                     to={item.path}
                     className="transition-colors duration-200"
-                    style={{ fontSize: 13, color: "#4a5568" }}
+                    style={{ fontSize: 13, color: "#8a95a3" }}
                     onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "#c0cdd8"; }}
                     onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "#4a5568"; }}
                   >
@@ -107,16 +108,16 @@ const Footer = () => {
           className="mt-10 pt-5 flex flex-col items-center gap-3 md:flex-row md:justify-between md:items-center"
           style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
         >
-          <span style={{ fontSize: 11, color: "#374151" }}>
+          <span style={{ fontSize: 11, color: "#6b7280" }}>
             [ПОЛНОЕ ЮРИДИЧЕСКОЕ НАЗВАНИЕ] · ИНН: [ИНН]
           </span>
-          <span style={{ fontSize: 11, color: "#374151" }}>
+          <span style={{ fontSize: 11, color: "#6b7280" }}>
             © 2026 АВИС. Все права защищены.
           </span>
           <Link
             to="/privacy"
             className="transition-colors duration-200"
-            style={{ fontSize: 11, color: "#374151" }}
+            style={{ fontSize: 11, color: "#6b7280" }}
             onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "#6b7280"; }}
             onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "#374151"; }}
           >

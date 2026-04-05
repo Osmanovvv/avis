@@ -124,7 +124,7 @@ const Contacts = () => {
 
         {/* Bottom info row */}
         <FadeIn delay={0.3}>
-          <div className="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="mt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-2">
               <MapPin size={14} style={{ color: "#4a5568", flexShrink: 0 }} />
               <span style={{ fontSize: 13, color: "#4a5568" }}>[АДРЕС]</span>

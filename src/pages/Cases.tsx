@@ -248,28 +248,28 @@ const Cases = () => {
 
             {/* Description */}
             <div>
-              <h4 className="text-[13px] font-medium text-foreground mb-1">Контекст объекта</h4>
+              <h3 className="text-[13px] font-medium text-foreground mb-1">Контекст объекта</h3>
               <p className="text-[13px] text-muted-foreground leading-relaxed">{selected.context}</p>
             </div>
             <div className="engineering-line" />
             <div>
-              <h4 className="text-[13px] font-medium text-foreground mb-1">Вызов</h4>
+              <h3 className="text-[13px] font-medium text-foreground mb-1">Вызов</h3>
               <p className="text-[13px] text-muted-foreground leading-relaxed">{selected.challenge}</p>
             </div>
             <div>
-              <h4 className="text-[13px] font-medium text-foreground mb-1">Архитектура решения</h4>
+              <h3 className="text-[13px] font-medium text-foreground mb-1">Архитектура решения</h3>
               <p className="text-[13px] text-muted-foreground leading-relaxed">{selected.architecture}</p>
             </div>
             <div className="engineering-line" />
             <div>
               <div className="flex items-center gap-1.5 mb-1">
                 <TrendingUp className="h-3.5 w-3.5 text-primary" />
-                <h4 className="text-[13px] font-medium text-foreground">Экономический эффект</h4>
+                <h3 className="text-[13px] font-medium text-foreground">Экономический эффект</h3>
               </div>
               <p className="text-[13px] text-muted-foreground leading-relaxed">{selected.economicEffect}</p>
             </div>
             <div className="rounded-lg bg-secondary/80 p-3.5">
-              <h4 className="text-[13px] font-medium text-foreground mb-0.5">Формат реализации</h4>
+              <h3 className="text-[13px] font-medium text-foreground mb-0.5">Формат реализации</h3>
               <p className="text-[13px] text-muted-foreground leading-relaxed">{selected.details}</p>
             </div>
           </div>

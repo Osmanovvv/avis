@@ -166,7 +166,7 @@ const Solutions = () => {
                       <h2 className="text-xl md:text-[1.375rem] mb-4">{cat.title}</h2>
                     </FadeIn>
                   )}
-                  <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+                  <div className="grid gap-5 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
                     {cat.products.map((p, pi) => (
                       <FadeIn key={p.id} delay={pi * 0.04}>
                         <ProductCard product={p} />

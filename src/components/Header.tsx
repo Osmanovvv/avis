@@ -223,11 +223,14 @@ const Header = () => {
               transition={{ delay: 0.35, duration: 0.3 }}
               className="px-8 pb-10 space-y-4 flex-shrink-0"
             >
-              {/* TODO: replace with real phone before go-live */}
-              <span className="flex items-center gap-2.5 text-[16px] font-light tracking-wide italic" style={{ color: "hsl(var(--text-placeholder))" }}>
+              <a
+                href="tel:+70000000000"
+                className="flex items-center gap-2.5 text-[16px] font-light tracking-wide no-underline"
+                style={{ color: "#c0cdd8" }}
+              >
                 <Phone className="h-4 w-4 text-highlight" />
-                [ТЕЛЕФОН]
-              </span>
+                +7 (000) 000-00-00
+              </a>
               <Link to="/contacts" onClick={() => setMobileOpen(false)}>
                 <button
                   className="w-full h-14 rounded-md font-semibold text-[14px] uppercase tracking-[0.08em] flex items-center justify-center gap-2"

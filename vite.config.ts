@@ -34,7 +34,6 @@ export default defineConfig(({ mode }) => ({
             "@radix-ui/react-accordion",
           ],
           "vendor-motion": ["framer-motion"],
-          "vendor-query": ["@tanstack/react-query"],
         },
       },
     },

@@ -76,6 +76,7 @@ const AdminLayout = () => {
           size="icon"
           className="w-11 h-11"
           onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label={sidebarOpen ? "Закрыть меню" : "Открыть меню"}
         >
           {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </Button>

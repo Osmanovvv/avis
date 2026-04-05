@@ -173,10 +173,10 @@ const HeroSection = () => {
           </FadeIn>
           <FadeIn delay={0.2}>
             <div style={{ marginTop: 20 }}>
-              <Link to="/contacts" className="inline-block w-full sm:w-auto">
+              <Link to="/contacts" className="inline-block w-full md:w-auto">
                 <Button
                   variant="hero"
-                  className="whitespace-nowrap w-full max-w-[360px] sm:w-auto sm:min-w-fit h-[52px] text-[12px] sm:text-[13px] font-semibold tracking-[0.1em] px-6 sm:px-8 inline-flex items-center justify-center gap-2 animate-hero-pulse"
+                  className="whitespace-nowrap w-full max-w-[360px] md:w-auto md:min-w-fit h-[52px] text-[12px] md:text-[13px] font-semibold tracking-[0.1em] px-6 md:px-8 inline-flex items-center justify-center gap-2 animate-hero-pulse"
                 >
                   ЗАПРОСИТЬ АУДИТ ОБЪЕКТА
                   <span className="shrink-0">→</span>
@@ -248,7 +248,7 @@ const Index = () => {
 
       {/* Industries strip */}
       <div
-        className="w-full relative overflow-hidden z-[1] flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 flex"
+        className="w-full relative overflow-hidden z-[1] flex-col md:flex-row items-start md:items-center gap-3 md:gap-6 flex"
         style={{
           padding: "16px 20px",
           background: "rgba(255,255,255,0.02)",
@@ -259,13 +259,13 @@ const Index = () => {
       >
         <style>{`.tags-scroll::-webkit-scrollbar{display:none}`}</style>
         <span
-          className="flex-shrink-0 uppercase whitespace-nowrap text-[9px] sm:text-[10px]"
+          className="flex-shrink-0 uppercase whitespace-nowrap text-[9px] md:text-[10px]"
           style={{ color: "#4a5568", letterSpacing: "0.15em" }}
         >
           ОТРАСЛИ ПРИМЕНЕНИЯ
         </span>
         <div
-          className="tags-scroll flex gap-2 items-center flex-nowrap sm:flex-wrap overflow-x-auto sm:overflow-x-visible"
+          className="tags-scroll flex gap-2 items-center flex-nowrap md:flex-wrap overflow-x-auto md:overflow-x-visible"
           style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
         >
           {["Энергетика и ТЭК", "Транспорт", "Промышленность", "Гособъекты", "КИИ", "ОПК"].map((tag) => (
@@ -301,18 +301,18 @@ const Index = () => {
           padding: "48px 6vw",
         }}
       >
-        <div className="grid grid-cols-2 sm:grid-cols-4">
+        <div className="grid grid-cols-2 md:grid-cols-4">
           {stats.map((s, i) => (
             <div
               key={s.label}
               className={[
-                "text-center py-6 px-4 sm:py-0",
+                "text-center py-6 px-4 md:py-0",
                 // Desktop: right border except last
-                i < 3 ? "sm:border-r sm:border-[rgba(255,255,255,0.05)]" : "",
+                i < 3 ? "md:border-r md:border-[rgba(255,255,255,0.05)]" : "",
                 // Mobile 2x2: bottom border on first row
-                i < 2 ? "border-b border-[rgba(255,255,255,0.05)] sm:border-b-0" : "",
+                i < 2 ? "border-b border-[rgba(255,255,255,0.05)] md:border-b-0" : "",
                 // Mobile 2x2: right border on left column
-                i % 2 === 0 ? "border-r border-[rgba(255,255,255,0.05)] sm:border-r-0" + (i < 3 ? " sm:border-r sm:border-[rgba(255,255,255,0.05)]" : "") : "",
+                i % 2 === 0 ? "border-r border-[rgba(255,255,255,0.05)] md:border-r-0" + (i < 3 ? " md:border-r md:border-[rgba(255,255,255,0.05)]" : "") : "",
               ].join(" ")}
             >
               <div

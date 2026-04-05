@@ -178,14 +178,14 @@ const VideoShowcase = () => {
               >
                 <button
                   onClick={togglePlay}
-                  className="flex h-8 w-8 items-center justify-center rounded-md text-primary-foreground hover:bg-primary-foreground/20 transition-colors"
+                  className="flex h-11 w-11 items-center justify-center rounded-md text-primary-foreground hover:bg-primary-foreground/20 transition-colors"
                   aria-label={isPlaying ? "Пауза" : "Воспроизвести"}
                 >
                   {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
                 </button>
                 <button
                   onClick={toggleMute}
-                  className="flex h-8 w-8 items-center justify-center rounded-md text-primary-foreground hover:bg-primary-foreground/20 transition-colors"
+                  className="flex h-11 w-11 items-center justify-center rounded-md text-primary-foreground hover:bg-primary-foreground/20 transition-colors"
                   aria-label={isMuted ? "Включить звук" : "Выключить звук"}
                 >
                   {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -193,7 +193,7 @@ const VideoShowcase = () => {
                 <div className="flex-1" />
                 <button
                   onClick={goFullscreen}
-                  className="flex h-8 w-8 items-center justify-center rounded-md text-primary-foreground hover:bg-primary-foreground/20 transition-colors"
+                  className="flex h-11 w-11 items-center justify-center rounded-md text-primary-foreground hover:bg-primary-foreground/20 transition-colors"
                   aria-label="Полный экран"
                 >
                   <Maximize className="h-4 w-4" />
@@ -229,10 +229,11 @@ const VideoShowcase = () => {
 
         {/* Thumbnails */}
         <FadeIn delay={0.15}>
-          <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
             {thumbnails.map((thumb) => (
               <button
                 key={thumb.id}
+                aria-label={`Воспроизвести: ${thumb.title}`}
                 onClick={() => switchVideo(thumb.src)}
                 className={`group/thumb relative rounded-lg overflow-hidden border transition-all duration-200 hover:shadow-card-hover ${
                   currentSrc === thumb.src
@@ -248,8 +249,8 @@ const VideoShowcase = () => {
                     className="h-full w-full object-cover"
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-foreground/10 group-hover/thumb:bg-foreground/20 transition-colors">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/80 text-primary-foreground">
-                      <Play className="h-3.5 w-3.5 ml-0.5" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/80 text-primary-foreground">
+                      <Play className="h-5 w-5 ml-0.5" />
                     </div>
                   </div>
                 </div>

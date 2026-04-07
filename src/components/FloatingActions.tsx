@@ -143,6 +143,12 @@ const QuickFormModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (
                 <>Перезвоните мне <ArrowRight className="h-4 w-4" /></>
               )}
             </button>
+            <p className="text-center" style={{ fontSize: 11, color: "#4a5568", margin: 0, marginTop: 6 }}>
+              Нажимая «Перезвоните мне», вы соглашаетесь с{" "}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "#4a7fa5", textDecoration: "underline" }}>
+                политикой конфиденциальности
+              </a>
+            </p>
           </form>
         )}
       </DialogContent>

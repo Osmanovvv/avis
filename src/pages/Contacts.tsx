@@ -340,7 +340,10 @@ const Contacts = () => {
                   </button>
 
                   <p className="text-center" style={{ fontSize: 12, color: "#4a5568", margin: 0, marginTop: 8 }}>
-                    Ответим в течение 2 часов · Без спама
+                    Нажимая «Отправить заявку», вы соглашаетесь с{" "}
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "#4a7fa5", textDecoration: "underline" }}>
+                      политикой конфиденциальности
+                    </a>
                   </p>
                 </form>
               )}
@@ -353,7 +356,7 @@ const Contacts = () => {
           <div className="mt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-2">
               <MapPin size={14} style={{ color: "#4a5568", flexShrink: 0 }} />
-              <span style={{ fontSize: 13, color: "#4a5568" }}>[АДРЕС]</span>
+              <span style={{ fontSize: 13, color: "#4a5568" }}>г. Сочи, ул. Пригородная, 6, офис 5</span>
             </div>
             <p
               className="text-right"

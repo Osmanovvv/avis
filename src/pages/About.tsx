@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import FadeIn from "@/components/FadeIn";
 import { ArrowRight, CheckCircle2, Phone } from "lucide-react";
 import SEO from "@/components/SEO";
+import { useContent } from "@/hooks/use-content";
+import { useSettings } from "@/hooks/use-settings";
+import { api } from "@/lib/api";
 
 /* Inline lead form (same as home) */
 function formatPhone(digits: string): string {
@@ -25,27 +28,35 @@ function extractDigits(value: string): string {
   return raw.slice(0, 10);
 }
 
-const steps = [
+const defaultSteps = [
   { num: "01", title: "Заявка", desc: "Вы оставляете заявку. Мы связываемся в течение 2 часов." },
   { num: "02", title: "Аудит объекта", desc: "Инженер выезжает на объект. Оценивает риски и зоны защиты." },
   { num: "03", title: "Проектирование", desc: "Разрабатываем архитектуру защиты под ваш объект." },
   { num: "04", title: "Изготовление и монтаж", desc: "Производим и устанавливаем. Сдаём с гарантией 3 года." },
 ];
 
-const bullets = [
+const defaultBullets = [
   "Собственное производство конструкций",
   "Полный цикл: аудит → проект → монтаж → гарантия",
   "Расширенная гарантия 3 года на все системы",
   "Изготовление от 5 рабочих дней",
 ];
 
-const stats = [
+const defaultStats = [
   { value: "200+", label: "защищённых объектов" },
   { value: "12 лет", label: "на рынке инженерной защиты" },
   { value: "[регионов]", label: "присутствие по РФ" },
 ];
 
 const About = () => {
+  const { content } = useContent();
+  const { settings } = useSettings();
+  const about = content?.about;
+  const contacts = content?.contacts;
+  const bullets = about?.advantages?.length && about.advantages.some(Boolean) ? about.advantages : defaultBullets;
+  const stats = content?.stats?.length && content.stats.some((s) => s.value) ? content.stats : defaultStats;
+  const steps = defaultSteps;
+
   const [digits, setDigits] = useState("");
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -57,13 +68,32 @@ const About = () => {
     if (error) setError("");
   }, [error]);
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (digits.length !== 10) {
       setError("Введите 10 цифр номера");
       inputRef.current?.focus();
       return;
     }
+    const phoneVal = formatPhone(digits);
+    try {
+      await api.createLead(phoneVal, "", "/about");
+      const token = import.meta.env.VITE_TG_BOT_TOKEN;
+      const chatId = import.meta.env.VITE_TG_CHAT_ID;
+      if (token && chatId && token !== "your_bot_token") {
+        const text = [
+          "📩 *Новая заявка с сайта*",
+          `📞 Телефон: ${phoneVal}`,
+          `📄 Страница: /about`,
+          `🕐 ${new Date().toLocaleString("ru-RU")}`,
+        ].join("\n");
+        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
+        });
+      }
+    } catch { /* продолжаем — заявка могла сохраниться */ }
     setSubmitted(true);
   }, [digits]);
 
@@ -113,7 +143,7 @@ const About = () => {
                 className="mt-8 text-[16px] leading-[1.8] mx-auto max-w-[600px] italic"
                 style={{ color: "#6b7280" }}
               >
-                [Краткое описание компании, предоставит клиент]
+                {about?.description || "[Краткое описание компании, предоставит клиент]"}
               </p>
             </div>
           </FadeIn>
@@ -377,8 +407,8 @@ const About = () => {
       <section style={{ background: "rgba(255,255,255,0.02)" }}>
         <div className="container py-6">
           <div className="text-center text-[12px] leading-[1.8]" style={{ color: "#374151" }}>
-            <p>[Полное юридическое название] · ИНН: [________] · ОГРН: [________]</p>
-            <p>[Юридический адрес]</p>
+            <p>{settings?.companyName || "[Полное юридическое название]"}{settings?.inn ? ` · ИНН: ${settings.inn}` : ""}{settings?.ogrn ? ` · ОГРН: ${settings.ogrn}` : ""}</p>
+            <p>{contacts?.address || "[Юридический адрес]"}</p>
           </div>
         </div>
       </section>

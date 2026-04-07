@@ -1,39 +1,9 @@
-import { useState, useRef, useCallback, useLayoutEffect } from "react";
+import { useState, useRef, useCallback, useLayoutEffect, useMemo } from "react";
 import FadeIn from "@/components/FadeIn";
 import { Phone, Send, Mail, MapPin, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
 import SEO from "@/components/SEO";
-
-const phone = import.meta.env.VITE_PHONE || "+70000000000";
-const telegram = import.meta.env.VITE_TELEGRAM || "username";
-const email = import.meta.env.VITE_EMAIL || "info@example.com";
-
-const contactActions = [
-  {
-    href: `tel:${phone}`,
-    icon: Phone,
-    label: "ПОЗВОНИТЬ",
-    value: phone.replace(/\+?(\d)(\d{3})(\d{3})(\d{2})(\d{2})/, "+$1 ($2) $3-$4-$5"),
-    sub: "Пн-Пт, 9:00-18:00",
-    primary: false,
-  },
-  {
-    href: `https://t.me/${telegram}`,
-    icon: Send,
-    label: "НАПИСАТЬ В TELEGRAM",
-    value: `@${telegram}`,
-    sub: "Основной канал — быстрее всего",
-    primary: true,
-    external: true,
-  },
-  {
-    href: `mailto:${email}`,
-    icon: Mail,
-    label: "НАПИСАТЬ НА EMAIL",
-    value: email,
-    sub: "Для документов и расчётов",
-    primary: false,
-  },
-];
+import { useContent } from "@/hooks/use-content";
+import { api } from "@/lib/api";
 
 /** Format 0-10 digits → "+7 (XXX) XXX-XX-XX" progressively */
 function formatPhone(d: string): string {
@@ -72,6 +42,39 @@ async function sendToTelegram(phoneVal: string, name: string): Promise<boolean> 
 }
 
 const Contacts = () => {
+  const { content } = useContent();
+  const phone = content?.contacts?.phone || import.meta.env.VITE_PHONE || "+70000000000";
+  const telegram = content?.contacts?.telegram || import.meta.env.VITE_TELEGRAM || "username";
+  const email = content?.contacts?.email || import.meta.env.VITE_EMAIL || "info@example.com";
+  const address = content?.contacts?.address || "г. Сочи, ул. Пригородная, 6, офис 5";
+
+  const contactActions = useMemo(() => [
+    {
+      href: `tel:${phone}`,
+      icon: Phone,
+      label: "ПОЗВОНИТЬ",
+      value: phone.replace(/\+?(\d)(\d{3})(\d{3})(\d{2})(\d{2})/, "+$1 ($2) $3-$4-$5"),
+      sub: "Пн-Пт, 9:00-18:00",
+      primary: false,
+    },
+    {
+      href: `https://t.me/${telegram}`,
+      icon: Send,
+      label: "НАПИСАТЬ В TELEGRAM",
+      value: `@${telegram}`,
+      sub: "Основной канал — быстрее всего",
+      primary: true,
+      external: true,
+    },
+    {
+      href: `mailto:${email}`,
+      icon: Mail,
+      label: "НАПИСАТЬ НА EMAIL",
+      value: email,
+      sub: "Для документов и расчётов",
+      primary: false,
+    },
+  ], [phone, telegram, email]);
   const [digits, setDigits] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
@@ -121,6 +124,7 @@ const Contacts = () => {
     setSubmitting(true);
     setSubmitError(false);
     try {
+      await api.createLead(displayValue, name, "/contacts");
       const ok = await sendToTelegram(displayValue, name);
       if (ok) {
         setSubmitted(true);
@@ -356,7 +360,7 @@ const Contacts = () => {
           <div className="mt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-2">
               <MapPin size={14} style={{ color: "#4a5568", flexShrink: 0 }} />
-              <span style={{ fontSize: 13, color: "#4a5568" }}>г. Сочи, ул. Пригородная, 6, офис 5</span>
+              <span style={{ fontSize: 13, color: "#4a5568" }}>{address}</span>
             </div>
             <p
               className="text-right"

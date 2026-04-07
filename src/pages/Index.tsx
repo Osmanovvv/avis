@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import FadeIn from "@/components/FadeIn";
@@ -10,13 +10,20 @@ import netsPerimeter from "@/assets/catalog/nets-perimeter.webp";
 import caseSubstation from "@/assets/case-energy-substation.webp";
 import { useIsMobile } from "@/hooks/use-mobile";
 import SEO from "@/components/SEO";
+import { useContent } from "@/hooks/use-content";
 
-const stats = [
+const defaultStats = [
   { value: "200+", label: "объектов", numeric: 200, suffix: "+" },
   { value: "12", label: "лет опыта", numeric: 12 },
   { value: "5", label: "изготовление", numeric: 5 },
   { value: "100%", label: "производство", numeric: 100, suffix: "%" },
 ];
+
+function parseStatValue(value: string): { numeric: number; suffix: string; prefix: string } {
+  const match = value.match(/^([^\d]*)(\d+)(.*)$/);
+  if (!match) return { numeric: 0, suffix: "", prefix: "" };
+  return { numeric: parseInt(match[2], 10), suffix: match[3] || "", prefix: match[1] || "" };
+}
 
 /* ── Animated counter ── */
 const AnimatedNumber = ({ target, suffix = "", prefix = "" }: { target: number; suffix?: string; prefix?: string }) => {
@@ -52,7 +59,7 @@ const AnimatedNumber = ({ target, suffix = "", prefix = "" }: { target: number; 
 };
 
 /* ── Hero — full-viewport, no-scroll ── */
-const HeroSection = () => {
+const HeroSection = ({ heroData }: { heroData?: { line1: string; line2: string; subtitle: string } }) => {
   const gridRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -147,7 +154,7 @@ const HeroSection = () => {
                   fontWeight: 200,
                 }}
               >
-                ЗАЩИТА ОБЪЕКТОВ ОТ БПЛА
+                {heroData?.line1 || "ЗАЩИТА ОБЪЕКТОВ ОТ БПЛА"}
               </span>
               <span
                 className="block text-highlight"
@@ -159,7 +166,7 @@ const HeroSection = () => {
                   marginTop: 0,
                 }}
               >
-                СЕТКИ, ОГРАЖДЕНИЯ, УКРЫТИЯ
+                {heroData?.line2 || "СЕТКИ, ОГРАЖДЕНИЯ, УКРЫТИЯ"}
               </span>
             </h1>
           </FadeIn>
@@ -168,7 +175,7 @@ const HeroSection = () => {
               className="drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)] line-clamp-2 md:line-clamp-none"
               style={{ marginTop: 16, maxWidth: 400, fontSize: 14, lineHeight: 1.4, color: "rgba(176, 186, 200, 0.7)" }}
             >
-              Пассивная инженерная защита. От аудита до монтажа под ключ
+              {heroData?.subtitle || "Пассивная инженерная защита. От аудита до монтажа под ключ"}
             </p>
           </FadeIn>
           <FadeIn delay={0.2}>
@@ -235,6 +242,18 @@ const VideoShowcase = () => (
 );
 
 const Index = () => {
+  const { content } = useContent();
+
+  const stats = useMemo(() => {
+    if (content?.stats?.length && content.stats.some((s) => s.value)) {
+      return content.stats.map((s) => {
+        const parsed = parseStatValue(s.value);
+        return { value: s.value, label: s.label, ...parsed };
+      });
+    }
+    return defaultStats;
+  }, [content]);
+
   return (
     <div>
       <SEO
@@ -243,7 +262,7 @@ const Index = () => {
         keywords="защита от бпла, защита объектов от бпла, антидроновые сетки, сетки защита от бпла, пассивная защита от бпла"
         path="/"
       />
-      <HeroSection />
+      <HeroSection heroData={content?.hero} />
       <SolutionsCatalog />
 
       {/* Industries strip */}

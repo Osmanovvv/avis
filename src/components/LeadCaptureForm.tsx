@@ -1,7 +1,12 @@
 import FadeIn from "@/components/FadeIn";
 import { Phone, Send } from "lucide-react";
+import { useContent } from "@/hooks/use-content";
 
 const LeadCaptureForm = () => {
+  const { content } = useContent();
+  const phone = content?.contacts?.phone || import.meta.env.VITE_PHONE || "+70000000000";
+  const telegram = content?.contacts?.telegram || import.meta.env.VITE_TELEGRAM || "username";
+  const emailAddr = content?.contacts?.email || import.meta.env.VITE_EMAIL || "info@example.com";
   return (
     <section style={{ background: "#090b0e" }} className="py-14 px-5 md:py-20 md:px-[6vw]">
       {/* CTA block */}
@@ -27,7 +32,7 @@ const LeadCaptureForm = () => {
           <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4 mt-8">
             {/* Primary — Call */}
             <a
-              href={`tel:${import.meta.env.VITE_PHONE || "+70000000000"}`}
+              href={`tel:${phone}`}
               className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-md h-[52px] px-9 text-[13px] font-semibold uppercase tracking-[0.08em] transition-all duration-200 hover:brightness-110 no-underline"
               style={{
                 background: "linear-gradient(135deg, #b8860b, #d4a017)",
@@ -41,7 +46,7 @@ const LeadCaptureForm = () => {
 
             {/* Secondary — Telegram */}
             <a
-              href={`https://t.me/${import.meta.env.VITE_TELEGRAM || "username"}`}
+              href={`https://t.me/${telegram}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-md h-[52px] px-9 text-[13px] font-semibold uppercase tracking-[0.08em] transition-all duration-200 no-underline"
@@ -70,11 +75,11 @@ const LeadCaptureForm = () => {
           <p className="mt-5" style={{ fontSize: 12, color: "#8a95a3", margin: 0, marginTop: 20 }}>
             или напишите на{" "}
             <a
-              href={`mailto:${import.meta.env.VITE_EMAIL || "info@example.com"}`}
+              href={`mailto:${emailAddr}`}
               className="no-underline transition-colors duration-200"
               style={{ color: "#4a7fa5" }}
             >
-              [EMAIL]
+              {emailAddr}
             </a>
           </p>
         </FadeIn>

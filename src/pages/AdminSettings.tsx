@@ -126,31 +126,6 @@ const AdminSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Contacts */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-medium">Контактные данные</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Телефон</label>
-            <Input value={settings.phone} onChange={(e) => update("phone", e.target.value)} />
-          </div>
-          <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Email</label>
-            <Input value={settings.email} onChange={(e) => update("email", e.target.value)} />
-          </div>
-          <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Telegram (@username)</label>
-            <Input value={settings.telegram} onChange={(e) => update("telegram", e.target.value)} />
-          </div>
-          <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Адрес</label>
-            <Input value={settings.address} onChange={(e) => update("address", e.target.value)} />
-          </div>
-        </CardContent>
-      </Card>
-
       {/* SEO per page */}
       <Card>
         <CardHeader>

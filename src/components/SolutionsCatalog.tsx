@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import FadeIn from "@/components/FadeIn";
+import { useContent } from "@/hooks/use-content";
 import netsPerimeter from "@/assets/catalog/nets-perimeter.webp";
 import netsPerimeter1x from "@/assets/catalog/nets-perimeter@1x.webp";
 import netsTanks from "@/assets/catalog/nets-tanks.webp";
@@ -14,7 +15,7 @@ import armoredDoors1x from "@/assets/catalog/armored-doors@1x.webp";
 import modularShelter from "@/assets/catalog/modular-shelter.webp";
 import modularShelter1x from "@/assets/catalog/modular-shelter@1x.webp";
 
-const products = [
+const defaultProducts = [
   { id: "nets-1", title: "Сетка для периметра", badge: "АНТИДРОНОВЫЕ СЕТКИ", image: netsPerimeter, image1x: netsPerimeter1x },
   { id: "nets-2", title: "Сетка на резервуары", badge: "АНТИДРОНОВЫЕ СЕТКИ", image: netsTanks, image1x: netsTanks1x },
   { id: "barriers-1", title: "Бетонные ограждения", badge: "БЕТОННЫЕ ОГРАЖДЕНИЯ", image: complexPerimeter, image1x: complexPerimeter1x },
@@ -23,7 +24,23 @@ const products = [
   { id: "shelters-1", title: "Убежища и укрытия", badge: "УБЕЖИЩА", image: modularShelter, image1x: modularShelter1x },
 ];
 
-const SolutionsCatalog = () => (
+const SolutionsCatalog = () => {
+  const { content } = useContent();
+
+  // Merge API products with defaults: use API name/description/image when available
+  const products = defaultProducts.map((def, i) => {
+    const apiProduct = content?.products?.[i];
+    if (!apiProduct?.name) return def;
+    return {
+      ...def,
+      title: apiProduct.name || def.title,
+      badge: apiProduct.description || def.badge,
+      image: apiProduct.image || def.image,
+      image1x: apiProduct.image || def.image1x,
+    };
+  });
+
+  return (
   <section>
     <div className="container pt-[72px] pb-[72px] lg:pt-[120px] lg:pb-[120px]">
       <FadeIn>
@@ -91,6 +108,7 @@ const SolutionsCatalog = () => (
       </FadeIn>
     </div>
   </section>
-);
+  );
+};
 
 export default SolutionsCatalog;

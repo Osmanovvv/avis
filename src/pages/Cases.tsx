@@ -6,11 +6,17 @@ import { CheckCircle2, TrendingUp, MapPin, Calendar } from "lucide-react";
 import SEO from "@/components/SEO";
 
 import caseSubstation from "@/assets/case-energy-substation.webp";
+import caseSubstation1x from "@/assets/case-energy-substation@1x.webp";
 import caseOil from "@/assets/case-energy-oil.webp";
+import caseOil1x from "@/assets/case-energy-oil@1x.webp";
 import caseWarehouse from "@/assets/case-transport-warehouse.webp";
+import caseWarehouse1x from "@/assets/case-transport-warehouse@1x.webp";
 import caseDatacenter from "@/assets/case-kii-datacenter.webp";
+import caseDatacenter1x from "@/assets/case-kii-datacenter@1x.webp";
 import caseFactory from "@/assets/case-industry-factory.webp";
+import caseFactory1x from "@/assets/case-industry-factory@1x.webp";
 import caseGov from "@/assets/case-gov-admin.webp";
+import caseGov1x from "@/assets/case-gov-admin@1x.webp";
 
 type Sector = "all" | "energy" | "transport" | "industry" | "government" | "kii";
 
@@ -22,6 +28,7 @@ interface CaseItem {
   city: string;
   year: string;
   img: string;
+  img1x: string;
   /** masonry height variant */
   tall?: boolean;
   context: string;
@@ -36,7 +43,7 @@ const cases: CaseItem[] = [
   {
     id: "1", sector: "energy", sectorLabel: "Энергетика",
     title: "Подстанция 220 кВ", city: "Екатеринбург", year: "2024",
-    img: caseSubstation, tall: true,
+    img: caseSubstation, img1x: caseSubstation1x, tall: true,
     context: "Подстанция 220 кВ в промышленном районе. Открытое распределительное устройство и трансформаторное оборудование без физической защиты сверху.",
     challenge: "Обеспечить непрерывность работы и исключить риск повреждения трансформаторов и ОРУ.",
     architecture: "Периметровые барьеры ОРУ + купольная защита трансформаторов + радар + интеграция с диспетчерским центром.",
@@ -47,7 +54,7 @@ const cases: CaseItem[] = [
   {
     id: "2", sector: "energy", sectorLabel: "Энергетика",
     title: "Нефтебаза, 12 резервуаров", city: "Самара", year: "2024",
-    img: caseOil,
+    img: caseOil, img1x: caseOil1x,
     context: "Нефтебаза с 12 резервуарами. Взрывоопасная среда, жёсткие требования промышленной безопасности.",
     challenge: "Защитить резервуарный парк и арматуру без нарушения технологических регламентов.",
     architecture: "Усиленные сетки над резервуарами + купольная защита насосных + оптико-электронный мониторинг.",
@@ -58,7 +65,7 @@ const cases: CaseItem[] = [
   {
     id: "3", sector: "transport", sectorLabel: "Транспорт",
     title: "РЦ e-commerce 80 000 м²", city: "Москва", year: "2025",
-    img: caseWarehouse, tall: true,
+    img: caseWarehouse, img1x: caseWarehouse1x, tall: true,
     context: "РЦ e-commerce 80 000 м² с непрерывным грузооборотом и товарными запасами свыше 2 млрд ₽.",
     challenge: "Защитить складские площади без нарушения логистических процессов.",
     architecture: "Стандартные сетки над складами + оптико-электронное наблюдение + автоматическое оповещение.",
@@ -69,7 +76,7 @@ const cases: CaseItem[] = [
   {
     id: "4", sector: "kii", sectorLabel: "КИИ",
     title: "ЦОД Tier III", city: "Санкт-Петербург", year: "2024",
-    img: caseDatacenter,
+    img: caseDatacenter, img1x: caseDatacenter1x,
     context: "ЦОД Tier III с SLA 99.99%. Чиллеры, ДГУ и кабельные вводы на открытой территории.",
     challenge: "Физическая защита открытых инженерных систем и гарантия SLA.",
     architecture: "Периметр + купольная защита ДГУ/чиллеров + радар + оптика + PSIM-интеграция.",
@@ -80,7 +87,7 @@ const cases: CaseItem[] = [
   {
     id: "5", sector: "industry", sectorLabel: "Промышленность",
     title: "Металлургический завод", city: "Челябинск", year: "2025",
-    img: caseFactory, tall: true,
+    img: caseFactory, img1x: caseFactory1x, tall: true,
     context: "Металлургический завод с открытыми площадками. Реконструкция цеха.",
     challenge: "Защита на период реконструкции без остановки смежных процессов.",
     architecture: "Мобильный комплекс (6 мес.) → стационарная система: барьеры + сетки + радар.",
@@ -91,7 +98,7 @@ const cases: CaseItem[] = [
   {
     id: "6", sector: "government", sectorLabel: "Госсектор",
     title: "Административный комплекс", city: "Москва", year: "2024",
-    img: caseGov,
+    img: caseGov, img1x: caseGov1x,
     context: "Административный комплекс федерального значения.",
     challenge: "Соответствие нормативам с минимальным визуальным воздействием на архитектуру.",
     architecture: "Периметр + оптика фасадов + RF-мониторинг + мобильный комплекс для мероприятий.",
@@ -166,6 +173,7 @@ const Cases = () => {
                 >
                   <img
                     src={c.img}
+                    srcSet={`${c.img1x} 1x, ${c.img} 2x`}
                     alt={c.title}
                     width={800}
                     height={600}

@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { useSettings } from "@/hooks/use-settings";
 
 const DOMAIN = "https://drone-shield-system.lovable.app";
 const OG_IMAGE = `${DOMAIN}/hero-poster.jpg`;
@@ -44,26 +45,30 @@ interface SEOProps {
 }
 
 const SEO = ({ title, description, path, keywords, ogTitle, ogDescription, ogType = "website" }: SEOProps) => {
+  const { settings } = useSettings();
+  const seo = settings?.seo?.[path];
+  const finalTitle = seo?.title || title;
+  const finalDescription = seo?.description || description;
   const canonical = `${DOMAIN}${path}`;
   const isHome = path === "/";
-  const jsonLd = isHome ? organizationJsonLd : buildBreadcrumbJsonLd(path, title);
+  const jsonLd = isHome ? organizationJsonLd : buildBreadcrumbJsonLd(path, finalTitle);
 
   return (
     <Helmet>
       <html lang="ru" />
-      <title>{title}</title>
-      <meta name="description" content={description} />
+      <title>{finalTitle}</title>
+      <meta name="description" content={finalDescription} />
       <meta name="robots" content="index, follow" />
       {keywords && <meta name="keywords" content={keywords} />}
       <link rel="canonical" href={canonical} />
-      <meta property="og:title" content={ogTitle || title} />
-      <meta property="og:description" content={ogDescription || description} />
+      <meta property="og:title" content={ogTitle || finalTitle} />
+      <meta property="og:description" content={ogDescription || finalDescription} />
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={canonical} />
       <meta property="og:image" content={OG_IMAGE} />
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={ogTitle || title} />
-      <meta name="twitter:description" content={ogDescription || description} />
+      <meta name="twitter:title" content={ogTitle || finalTitle} />
+      <meta name="twitter:description" content={ogDescription || finalDescription} />
       <meta name="twitter:image" content={OG_IMAGE} />
       <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
     </Helmet>

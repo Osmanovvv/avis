@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useLayoutEffect, useRef } from "react";
+import { api } from "@/lib/api";
 import { Phone, X, MessageSquare, PhoneCall } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,7 @@ const QuickFormModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (
     if (digits.length !== 10) { setError("Введите 10 цифр номера"); return; }
     setLoading(true);
     try {
+      await api.createLead(`+7${digits}`, "", "popup");
       const token = import.meta.env.VITE_TG_BOT_TOKEN;
       const chatId = import.meta.env.VITE_TG_CHAT_ID;
       if (!token || !chatId || token === "your_bot_token") {
@@ -208,7 +210,7 @@ const FloatingActions = () => {
           </span>
           <Link to="/contacts" className="flex-1 max-w-[240px]">
             <button
-              className="w-full h-10 rounded-md font-semibold text-[13px] uppercase tracking-[0.08em] flex items-center justify-center gap-2 transition-all hover:brightness-110"
+              className="w-full h-[52px] rounded-md font-semibold text-[13px] uppercase tracking-[0.08em] flex items-center justify-center gap-2 transition-all hover:brightness-110"
               style={{ background: "linear-gradient(135deg, hsl(var(--gold)), hsl(var(--gold-light)))", color: "#0a0c0f" }}
             >
               Аудит объекта <ArrowRight className="h-4 w-4" />

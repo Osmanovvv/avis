@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Phone, ArrowRight, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MegaMenu from "@/components/MegaMenu";
+import { useContent } from "@/hooks/use-content";
 
 const navItems = [
   { label: "Главная", path: "/", idx: "001" },
@@ -50,6 +51,8 @@ const HamburgerIcon = ({ open }: { open: boolean }) => (
 );
 
 const Header = () => {
+  const { content } = useContent();
+  const headerPhone = content?.contacts?.phone || import.meta.env.VITE_PHONE || "+70000000000";
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [counterVisible, setCounterVisible] = useState(true);
@@ -224,12 +227,12 @@ const Header = () => {
               className="px-8 pb-10 space-y-4 flex-shrink-0"
             >
               <a
-                href={`tel:${import.meta.env.VITE_PHONE || "+70000000000"}`}
+                href={`tel:${headerPhone}`}
                 className="flex items-center gap-2.5 text-[16px] font-light tracking-wide no-underline"
                 style={{ color: "#c0cdd8" }}
               >
                 <Phone className="h-4 w-4 text-highlight" />
-                {(import.meta.env.VITE_PHONE || "+70000000000").replace(/\+?(\d)(\d{3})(\d{3})(\d{2})(\d{2})/, "+$1 ($2) $3-$4-$5")}
+                {headerPhone.replace(/\+?(\d)(\d{3})(\d{3})(\d{2})(\d{2})/, "+$1 ($2) $3-$4-$5")}
               </a>
               <Link to="/contacts" onClick={() => setMobileOpen(false)}>
                 <button

@@ -1,5 +1,8 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, Send } from "lucide-react";
+import { useContent } from "@/hooks/use-content";
+import { useSettings } from "@/hooks/use-settings";
 
 const navLinks = [
   { label: "Главная", path: "/" },
@@ -9,18 +12,20 @@ const navLinks = [
   { label: "Контакты", path: "/contacts" },
 ];
 
-const phone = import.meta.env.VITE_PHONE || "+70000000000";
-const telegram = import.meta.env.VITE_TELEGRAM || "username";
-const email = import.meta.env.VITE_EMAIL || "info@example.com";
-
-const contacts = [
-  { icon: Phone, text: phone.replace(/\+?(\d)(\d{3})(\d{3})(\d{2})(\d{2})/, "+$1 ($2) $3-$4-$5"), href: `tel:${phone}`, highlight: false },
-  { icon: Mail, text: email, href: `mailto:${email}`, highlight: false },
-  { icon: MapPin, text: "[АДРЕС]", href: undefined, highlight: false },
-  { icon: Send, text: `@${telegram}`, href: `https://t.me/${telegram}`, highlight: true },
-];
-
 const Footer = () => {
+  const { content } = useContent();
+  const { settings } = useSettings();
+  const phone = content?.contacts?.phone || import.meta.env.VITE_PHONE || "+70000000000";
+  const telegram = content?.contacts?.telegram || import.meta.env.VITE_TELEGRAM || "username";
+  const email = content?.contacts?.email || import.meta.env.VITE_EMAIL || "info@example.com";
+  const address = content?.contacts?.address || "[АДРЕС]";
+
+  const contacts = useMemo(() => [
+    { icon: Phone, text: phone.replace(/\+?(\d)(\d{3})(\d{3})(\d{2})(\d{2})/, "+$1 ($2) $3-$4-$5"), href: `tel:${phone}`, highlight: false },
+    { icon: Mail, text: email, href: `mailto:${email}`, highlight: false },
+    { icon: MapPin, text: address, href: undefined, highlight: false },
+    { icon: Send, text: `@${telegram}`, href: `https://t.me/${telegram}`, highlight: true },
+  ], [phone, telegram, email, address]);
   return (
     <footer style={{ background: "#080a0d", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
       <div className="px-5 pt-9 pb-6 md:px-[6vw] md:pt-12 md:pb-8">
@@ -113,7 +118,7 @@ const Footer = () => {
           style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
         >
           <span style={{ fontSize: 11, color: "#6b7280" }}>
-            [ПОЛНОЕ ЮРИДИЧЕСКОЕ НАЗВАНИЕ] · ИНН: [ИНН]
+            {settings?.companyName || "[ПОЛНОЕ ЮРИДИЧЕСКОЕ НАЗВАНИЕ]"}{settings?.inn ? ` · ИНН: ${settings.inn}` : ""}
           </span>
           <span style={{ fontSize: 11, color: "#6b7280" }}>
             © 2026 АВИС. Все права защищены.

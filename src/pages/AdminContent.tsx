@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import { Check, Loader2, Upload, X } from "lucide-react";
+import { invalidateContentCache } from "@/hooks/use-content";
 
 interface ContentData {
   hero: { line1: string; line2: string; subtitle: string };
@@ -50,6 +51,7 @@ const AdminContent = () => {
         api.updateContent("about", content.about),
         api.updateContent("contacts", content.contacts),
       ]);
+      invalidateContentCache();
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (e) {

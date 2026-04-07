@@ -1,8 +1,10 @@
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 const IS_MOCK = !import.meta.env.VITE_API_URL;
 
-// Mock storage for local dev without backend
-const mockStore: Record<string, unknown> = {
+// ── Mock persistence via localStorage ──
+const MOCK_STORAGE_KEY = "avis_mock_store";
+
+const defaultMockStore = {
   content: {
     hero: { line1: "ЗАЩИТА ОБЪЕКТОВ", line2: "ОТ БПЛА", subtitle: "Пассивные системы защиты от дронов" },
     stats: [
@@ -19,6 +21,31 @@ const mockStore: Record<string, unknown> = {
   leads: [] as Array<Record<string, unknown>>,
   media: [] as Array<Record<string, unknown>>,
 };
+
+function loadMockStore(): Record<string, unknown> {
+  try {
+    const saved = localStorage.getItem(MOCK_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Merge with defaults to ensure new keys exist
+      return {
+        ...defaultMockStore,
+        ...parsed,
+        content: { ...defaultMockStore.content, ...(parsed.content || {}) },
+        settings: { ...defaultMockStore.settings, ...(parsed.settings || {}) },
+      };
+    }
+  } catch { /* ignore parse errors */ }
+  return JSON.parse(JSON.stringify(defaultMockStore));
+}
+
+function saveMockStore() {
+  try {
+    localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(mockStore));
+  } catch { /* ignore quota errors */ }
+}
+
+const mockStore: Record<string, unknown> = loadMockStore();
 
 let mockMediaId = 1;
 
@@ -87,6 +114,7 @@ export const api = {
   updateContent: (key: string, data: unknown) => {
     if (IS_MOCK) {
       (mockStore.content as Record<string, unknown>)[key] = data;
+      saveMockStore();
       return Promise.resolve({ success: true });
     }
     return request("content.php", {
@@ -110,6 +138,7 @@ export const api = {
     if (IS_MOCK) {
       const lead = { id: Date.now(), phone, name, source, processed: false, created_at: new Date().toISOString() };
       (mockStore.leads as Array<Record<string, unknown>>).unshift(lead);
+      saveMockStore();
       return Promise.resolve(lead);
     }
     return request("leads.php", {
@@ -122,6 +151,7 @@ export const api = {
       const leads = mockStore.leads as Array<Record<string, unknown>>;
       const lead = leads.find((l) => l.id === id);
       if (lead) lead.processed = processed;
+      saveMockStore();
       return Promise.resolve({ success: true });
     }
     return request("leads.php", {
@@ -138,6 +168,7 @@ export const api = {
   updateSettings: (data: Record<string, unknown>) => {
     if (IS_MOCK) {
       mockStore.settings = data;
+      saveMockStore();
       return Promise.resolve({ success: true });
     }
     return request("settings.php", {
@@ -157,6 +188,7 @@ export const api = {
       const url = URL.createObjectURL(file);
       const entry = { id, filename: file.name, original_name: file.name, file_type: file.type.startsWith("image/") ? "image" : "video", file_size: file.size, url };
       (mockStore.media as Array<Record<string, unknown>>).unshift(entry);
+      saveMockStore();
       return Promise.resolve({ id, url });
     }
     const formData = new FormData();
@@ -169,6 +201,7 @@ export const api = {
   deleteMedia: (id: number) => {
     if (IS_MOCK) {
       mockStore.media = (mockStore.media as Array<Record<string, unknown>>).filter((m) => m.id !== id);
+      saveMockStore();
       return Promise.resolve({ success: true });
     }
     return request(`media.php?id=${id}`, { method: "DELETE" });

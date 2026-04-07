@@ -60,7 +60,9 @@ function verifyToken(string $token, string $secret): ?array {
 
 function requireAuth(): array {
     global $JWT_SECRET;
-    $header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    $header = $_SERVER['HTTP_AUTHORIZATION']
+        ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
+        ?? (function_exists('apache_request_headers') ? (apache_request_headers()['Authorization'] ?? '') : '');
     $token = str_replace('Bearer ', '', $header);
 
     $data = verifyToken($token, $JWT_SECRET);

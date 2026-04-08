@@ -78,17 +78,7 @@ const HeroSection = ({ heroData }: { heroData?: { line1: string; line2: string; 
     <section className="relative overflow-hidden flex items-center noise-overlay h-[100svh] min-h-[100svh] md:h-screen md:min-h-screen">
       {/* Video / Poster background */}
       <div className="absolute inset-0 overflow-hidden">
-        {isMobile ? (
-          <img
-            src="/hero-poster.webp"
-            alt="Защита объектов от БПЛА. Антидроновые сетки АВИС"
-            width={1920}
-            height={1080}
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ filter: "saturate(0.35) brightness(0.32)", objectPosition: "center 20%" }}
-          />
-        ) : (
-          <video
+        <video
             autoPlay
             muted
             loop
@@ -96,12 +86,11 @@ const HeroSection = ({ heroData }: { heroData?: { line1: string; line2: string; 
             preload="none"
             poster="/hero-poster.webp"
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ filter: "brightness(0.32) saturate(0.35)" }}
+            style={{ filter: "brightness(0.32) saturate(0.35)", objectPosition: isMobile ? "center 20%" : undefined }}
           >
             <source src="/hero-video.webm" type="video/webm" />
             <source src="/hero-video.mp4" type="video/mp4" />
           </video>
-        )}
 
         {/* Gradient overlay */}
         <div
@@ -133,9 +122,9 @@ const HeroSection = ({ heroData }: { heroData?: { line1: string; line2: string; 
 
       {/* Content — vertically centered */}
       <div
-        className="relative z-10 flex flex-col"
+        className="relative z-10 flex flex-col w-full"
         style={{
-          height: "calc(100vh - 96px)",
+          height: isMobile ? "calc(100svh - 80px)" : "calc(100vh - 96px)",
           paddingLeft: isMobile ? "24px" : "6vw",
           paddingRight: isMobile ? "24px" : "50%",
           justifyContent: isMobile ? "flex-end" : "center",

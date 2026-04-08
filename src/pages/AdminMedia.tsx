@@ -11,6 +11,7 @@ interface MediaFile {
   file_type: "image" | "video";
   file_size: number;
   url: string;
+  category?: string;
 }
 
 const formatSize = (bytes: number) => {
@@ -19,8 +20,111 @@ const formatSize = (bytes: number) => {
   return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 };
 
+/* ── Slot uploader for video poster/mp4 ── */
+function SlotUploader({
+  label,
+  accept,
+  maxMB,
+  currentUrl,
+  onUpload,
+  onDelete,
+}: {
+  label: string;
+  accept: string;
+  maxMB: number;
+  currentUrl: string;
+  onUpload: (file: File) => Promise<void>;
+  onDelete: () => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const isVideo = accept.startsWith("video");
+
+  const handle = async (file: File) => {
+    if (file.size > maxMB * 1024 * 1024) {
+      setError(`Максимум ${maxMB}MB`);
+      return;
+    }
+    setError("");
+    setUploading(true);
+    try {
+      await onUpload(file);
+    } catch {
+      setError("Ошибка загрузки");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="text-sm text-muted-foreground block">{label}</label>
+      {currentUrl ? (
+        <div className="relative group rounded-lg overflow-hidden border border-border inline-block">
+          <div className="w-48 h-32 bg-muted">
+            {isVideo ? (
+              <video src={currentUrl} className="w-full h-full object-cover" muted playsInline />
+            ) : (
+              <img src={currentUrl} alt={label} className="w-full h-full object-cover" width={192} height={128} />
+            )}
+          </div>
+          <Button
+            variant="destructive"
+            size="icon"
+            className="absolute top-1 right-1 w-7 h-7 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={onDelete}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      ) : (
+        <div
+          onClick={() => ref.current?.click()}
+          className="w-48 h-32 border-2 border-dashed border-border hover:border-muted-foreground rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors"
+        >
+          {uploading ? (
+            <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+          ) : (
+            <>
+              <Upload className="w-5 h-5 text-muted-foreground mb-1" />
+              <span className="text-[11px] text-muted-foreground">До {maxMB}MB</span>
+            </>
+          )}
+        </div>
+      )}
+      <input
+        ref={ref}
+        type="file"
+        accept={accept}
+        className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handle(f); e.target.value = ""; }}
+      />
+      {error && <p className="text-xs text-red-500">{error}</p>}
+    </div>
+  );
+}
+
+/* ── Settings for video slots stored in content ── */
+const VIDEO_SLOTS_KEY = "videoSlots";
+
+interface VideoSlots {
+  video01_poster: string;
+  video01_mp4: string;
+  video02_poster: string;
+  video02_mp4: string;
+}
+
+const defaultSlots: VideoSlots = {
+  video01_poster: "",
+  video01_mp4: "",
+  video02_poster: "",
+  video02_mp4: "",
+};
+
 const AdminMedia = () => {
   const [files, setFiles] = useState<MediaFile[]>([]);
+  const [slots, setSlots] = useState<VideoSlots>(defaultSlots);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -28,12 +132,31 @@ const AdminMedia = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    api.getMedia()
-      .then((data) => setFiles(data as MediaFile[]))
+    Promise.all([
+      api.getMedia().then((data) => setFiles(data as MediaFile[])),
+      api.getContent().then((data: any) => {
+        if (data[VIDEO_SLOTS_KEY]) setSlots({ ...defaultSlots, ...data[VIDEO_SLOTS_KEY] });
+      }),
+    ])
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
+  const saveSlots = async (updated: VideoSlots) => {
+    setSlots(updated);
+    await api.updateContent(VIDEO_SLOTS_KEY, updated);
+  };
+
+  const handleSlotUpload = async (slotKey: keyof VideoSlots, file: File) => {
+    const result = await api.uploadMedia(file);
+    await saveSlots({ ...slots, [slotKey]: result.url });
+  };
+
+  const handleSlotDelete = async (slotKey: keyof VideoSlots) => {
+    await saveSlots({ ...slots, [slotKey]: "" });
+  };
+
+  /* ── General upload ── */
   const uploadFiles = useCallback(async (fileList: FileList) => {
     setError("");
     setUploading(true);
@@ -97,93 +220,56 @@ const AdminMedia = () => {
     <div className="space-y-6 max-w-3xl">
       <h1 className="text-xl font-light">Медиафайлы</h1>
 
-      {/* Upload zone */}
+      {/* Video slots */}
       <Card>
-        <CardContent className="pt-6">
-          <div
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            onClick={() => inputRef.current?.click()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-              dragOver ? "border-accent bg-accent/5" : "border-border hover:border-muted-foreground"
-            }`}
-          >
-            {uploading ? (
-              <Loader2 className="w-8 h-8 mx-auto mb-3 text-muted-foreground animate-spin" />
-            ) : (
-              <Upload className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
-            )}
-            <p className="text-sm text-muted-foreground">
-              {uploading ? "Загрузка..." : "Перетащите файлы сюда или нажмите для выбора"}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Фото до 5MB • Видео до 50MB
-            </p>
-          </div>
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*,video/*"
-            multiple
-            className="hidden"
-            onChange={(e) => e.target.files && uploadFiles(e.target.files)}
+        <CardHeader>
+          <CardTitle className="text-base font-medium">Видеоплеер — ролик 01</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-4">
+          <SlotUploader
+            label="Poster (изображение)"
+            accept="image/*"
+            maxMB={5}
+            currentUrl={slots.video01_poster}
+            onUpload={(f) => handleSlotUpload("video01_poster", f)}
+            onDelete={() => handleSlotDelete("video01_poster")}
           />
-          {error && <p className="text-sm text-red-500 mt-3">{error}</p>}
+          <SlotUploader
+            label="Видео (MP4)"
+            accept="video/mp4"
+            maxMB={50}
+            currentUrl={slots.video01_mp4}
+            onUpload={(f) => handleSlotUpload("video01_mp4", f)}
+            onDelete={() => handleSlotDelete("video01_mp4")}
+          />
         </CardContent>
       </Card>
 
-      {/* Files grid */}
-      {files.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-medium">
-              Загруженные файлы ({files.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {files.map((file) => (
-                <div key={file.id} className="relative group rounded-lg overflow-hidden border border-border">
-                  <div className="aspect-[4/3] bg-muted">
-                    {file.file_type === "image" ? (
-                      <img
-                        src={file.url}
-                        alt={file.original_name}
-                        className="w-full h-full object-cover"
-                        width={320}
-                        height={240}
-                      />
-                    ) : (
-                      <video
-                        src={file.url}
-                        className="w-full h-full object-cover"
-                        muted
-                        playsInline
-                      />
-                    )}
-                  </div>
-                  <div className="p-2">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      {file.file_type === "image" ? <Image className="w-3 h-3" /> : <Film className="w-3 h-3" />}
-                      <span className="truncate flex-1">{file.original_name}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{formatSize(file.file_size)}</p>
-                  </div>
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2 w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => handleDelete(file.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-medium">Видеоплеер — ролик 02</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-4">
+          <SlotUploader
+            label="Poster (изображение)"
+            accept="image/*"
+            maxMB={5}
+            currentUrl={slots.video02_poster}
+            onUpload={(f) => handleSlotUpload("video02_poster", f)}
+            onDelete={() => handleSlotDelete("video02_poster")}
+          />
+          <SlotUploader
+            label="Видео (MP4)"
+            accept="video/mp4"
+            maxMB={50}
+            currentUrl={slots.video02_mp4}
+            onUpload={(f) => handleSlotUpload("video02_mp4", f)}
+            onDelete={() => handleSlotDelete("video02_mp4")}
+          />
+        </CardContent>
+      </Card>
+
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );
 };

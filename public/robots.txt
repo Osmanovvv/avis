@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://drone-shield-system.lovable.app/sitemap.xml
+Sitemap: http://159.194.201.36/sitemap.xml

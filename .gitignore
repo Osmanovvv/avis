@@ -28,3 +28,4 @@ public/hero-video-original.mp4
 .env
 .env.local
 .env.production
+api/uploads/

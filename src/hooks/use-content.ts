@@ -7,6 +7,7 @@ interface ContentData {
   products: Array<{ name: string; description: string; image: string }>;
   about: { description: string; advantages: string[] };
   contacts: { phone: string; email: string; telegram: string; address: string };
+  videoSlots?: { video01_poster: string; video01_mp4: string; video02_poster: string; video02_mp4: string };
 }
 
 // Shared cache so multiple components don't re-fetch
@@ -24,6 +25,7 @@ function fetchContent(): Promise<ContentData> {
       products: data.products || [],
       about: data.about || { description: "", advantages: [] },
       contacts: data.contacts || { phone: "", email: "", telegram: "", address: "" },
+      videoSlots: data.videoSlots || undefined,
     };
     return cache;
   }).catch(() => {

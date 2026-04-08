@@ -32,8 +32,26 @@ if ($method === 'POST') {
 
     $stmt = $pdo->prepare('INSERT INTO leads (phone, name, source) VALUES (?, ?, ?)');
     $stmt->execute([$phone, $name, $source]);
+    $leadId = $pdo->lastInsertId();
 
-    jsonResponse(['success' => true, 'id' => $pdo->lastInsertId()], 201);
+    // Send to Telegram
+    $tgToken = getenv('TG_BOT_TOKEN') ?: '';
+    $tgChatId = getenv('TG_CHAT_ID') ?: '';
+    if ($tgToken && $tgChatId) {
+        $lines = ["📩 *Новая заявка с сайта*", "📞 Телефон: $phone"];
+        if ($name) $lines[] = "👤 Имя/компания: $name";
+        if ($source) $lines[] = "📄 Страница: $source";
+        $lines[] = "🕐 " . date('d.m.Y H:i');
+        $text = implode("\n", $lines);
+
+        @file_get_contents("https://api.telegram.org/bot$tgToken/sendMessage?" . http_build_query([
+            'chat_id' => $tgChatId,
+            'text' => $text,
+            'parse_mode' => 'Markdown',
+        ]));
+    }
+
+    jsonResponse(['success' => true, 'id' => $leadId], 201);
 }
 
 if ($method === 'PUT') {

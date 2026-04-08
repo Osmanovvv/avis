@@ -20,26 +20,6 @@ function formatPhone(d: string): string {
 }
 
 
-async function sendToTelegram(phoneVal: string, name: string): Promise<boolean> {
-  const token = import.meta.env.VITE_TG_BOT_TOKEN;
-  const chatId = import.meta.env.VITE_TG_CHAT_ID;
-  if (!token || !chatId || token === "your_bot_token") return true; // mock mode
-
-  const text = [
-    "📩 *Новая заявка с сайта*",
-    `📞 Телефон: ${phoneVal}`,
-    name ? `👤 Имя/компания: ${name}` : "",
-    `📄 Страница: /contacts`,
-    `🕐 ${new Date().toLocaleString("ru-RU")}`,
-  ].filter(Boolean).join("\n");
-
-  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
-  });
-  return res.ok;
-}
 
 const Contacts = () => {
   const { content } = useContent();
@@ -125,12 +105,7 @@ const Contacts = () => {
     setSubmitError(false);
     try {
       await api.createLead(displayValue, name, "/contacts");
-      const ok = await sendToTelegram(displayValue, name);
-      if (ok) {
-        setSubmitted(true);
-      } else {
-        setSubmitError(true);
-      }
+      setSubmitted(true);
     } catch {
       setSubmitError(true);
     } finally {

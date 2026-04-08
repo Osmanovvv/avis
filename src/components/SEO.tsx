@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { useSettings } from "@/hooks/use-settings";
 
-const DOMAIN = "https://drone-shield-system.lovable.app";
+const DOMAIN = import.meta.env.VITE_SITE_URL || "http://159.194.201.36";
 const OG_IMAGE = `${DOMAIN}/hero-poster.jpg`;
 
 const organizationJsonLd = {

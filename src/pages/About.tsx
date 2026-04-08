@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useLayoutEffect } from "react";
 import { Link } from "react-router-dom";
 import FadeIn from "@/components/FadeIn";
 import { ArrowRight, CheckCircle2, Phone } from "lucide-react";
@@ -59,12 +59,38 @@ const About = () => {
 
   const [digits, setDigits] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const d = extractDigits(e.target.value);
-    setDigits(d);
+  const displayValue = formatPhone(digits);
+  const isComplete = digits.length === 10;
+
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (el && el === document.activeElement && displayValue) {
+      const len = displayValue.length;
+      el.setSelectionRange(len, len);
+    }
+  }, [displayValue]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      setDigits(prev => prev.slice(0, -1));
+      if (error) setError("");
+    } else if (/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+      setDigits(prev => prev.length < 10 ? prev + e.key : prev);
+      if (error) setError("");
+    }
+  }, [error]);
+
+  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    let d = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (d.length >= 11 && (d[0] === "7" || d[0] === "8")) d = d.slice(1);
+    setDigits(d.slice(0, 10));
     if (error) setError("");
   }, [error]);
 
@@ -76,29 +102,16 @@ const About = () => {
       return;
     }
     const phoneVal = formatPhone(digits);
+    setSubmitting(true);
     try {
       await api.createLead(phoneVal, "", "/about");
-      const token = import.meta.env.VITE_TG_BOT_TOKEN;
-      const chatId = import.meta.env.VITE_TG_CHAT_ID;
-      if (token && chatId && token !== "your_bot_token") {
-        const text = [
-          "📩 *Новая заявка с сайта*",
-          `📞 Телефон: ${phoneVal}`,
-          `📄 Страница: /about`,
-          `🕐 ${new Date().toLocaleString("ru-RU")}`,
-        ].join("\n");
-        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
-        });
-      }
-    } catch { /* продолжаем — заявка могла сохраниться */ }
-    setSubmitted(true);
+      setSubmitted(true);
+    } catch {
+      setError("Ошибка отправки. Попробуйте позвонить или написать в Telegram.");
+    } finally {
+      setSubmitting(false);
+    }
   }, [digits]);
-
-  const displayValue = digits.length > 0 ? formatPhone(digits) : "";
-  const isComplete = digits.length === 10;
 
   return (
     <div>
@@ -113,21 +126,13 @@ const About = () => {
         <div className="container pt-[72px] pb-[72px] lg:pt-[120px] lg:pb-[120px]">
           <FadeIn>
             <div className="text-center max-w-3xl mx-auto">
-              {/* TODO: Replace with real logo from client */}
-              <div
-                className="mx-auto mb-10 flex items-center justify-center"
-                style={{
-                  width: 200,
-                  height: 60,
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px dashed rgba(255,255,255,0.15)",
-                  borderRadius: 4,
-                }}
-              >
-                <span className="text-[11px] uppercase tracking-[0.15em]" style={{ color: "#4a5568" }}>
-                  ЛОГОТИП
-                </span>
-              </div>
+              <img
+                src="/logo-avis.jpg"
+                alt="Логотип АВИС — строительная компания"
+                width={180}
+                height={180}
+                className="mx-auto mb-10 rounded-md"
+              />
 
               <span className="text-[11px] uppercase tracking-[0.15em] text-highlight font-light block mb-6">
                 О компании
@@ -194,7 +199,7 @@ const About = () => {
               Реализованные объекты
             </h2>
           </FadeIn>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-6 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-6 text-center">
             {stats.map((s, i) => (
               <FadeIn key={s.label} delay={i * 0.08}>
                 <div>
@@ -288,31 +293,46 @@ const About = () => {
         <div className="container pt-[72px] pb-[72px] lg:pt-[100px] lg:pb-[100px]">
           <FadeIn>
             <h2
-              className="text-[20px] font-extralight text-center mb-12"
-              style={{ color: "#c0cdd8" }}
+              className="text-[11px] uppercase tracking-[0.12em] text-center mb-12"
+              style={{ color: "#4a5568" }}
             >
-              ПАРТНЁРЫ И КЛИЕНТЫ
+              Наши заказчики
             </h2>
           </FadeIn>
-          {/* TODO: Replace placeholders with real partner logos */}
           <FadeIn delay={0.08}>
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-4 max-w-[720px] mx-auto">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-center"
-                  style={{
-                    width: "100%",
-                    height: 40,
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px dashed rgba(255,255,255,0.1)",
-                    borderRadius: 4,
-                  }}
-                >
-                  <span className="text-[9px] uppercase tracking-[0.1em]" style={{ color: "#374151" }}>
-                    ПАРТНЁР
-                  </span>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 max-w-[900px] mx-auto">
+              {[
+                'ОАО «ИНТЕР РАО – Электрогенерация»',
+                'Межрайонная ИФНС России №7 по Краснодарскому краю',
+                'ФГБУ «Объединенный санаторий «Сочи» УДП РФ',
+                'ГБУ КК «Дворец спорта Большой»',
+                'ООО «КВАРЦ Групп»',
+                'АО «МОРЕМОЛЛ»',
+                'НАО «Центр Омега»',
+                'ОАО «Отель «Звездный»',
+                'ПАО «ОГК-2»',
+                'АО «Галерея Краснодар»',
+                'МУП г. Сочи «Водоканал»',
+                'ФГУП «Росморпорт»',
+                'ПАО «Калужский турбинный завод»',
+                'АО «Силовые машины»',
+                'ООО «ГК „Русагро"»',
+                'УДП РФ «Объединенный санаторий „Русь"»',
+              ].map((name, i) => (
+                <FadeIn key={name} delay={i * 0.03}>
+                  <div
+                    className="flex items-center gap-3 py-3 px-4 rounded-md"
+                    style={{ background: "rgba(255,255,255,0.02)" }}
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{ background: "#4a7fa5" }}
+                    />
+                    <span className="text-[13px]" style={{ color: "#8a95a3" }}>
+                      {name}
+                    </span>
+                  </div>
+                </FadeIn>
               ))}
             </div>
           </FadeIn>
@@ -353,7 +373,9 @@ const About = () => {
                       placeholder="+7 (900) 123-45-67"
                       aria-label="Телефон"
                       value={displayValue}
-                      onChange={handleChange}
+                      onKeyDown={handleKeyDown}
+                      onPaste={handlePaste}
+                      onChange={() => {}}
                       autoComplete="tel"
                       className={`w-full rounded-md pl-11 pr-4 text-[16px] font-light tracking-wide text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-all h-[52px] ${
                         error ? "border-red-500/60" : ""
@@ -382,19 +404,26 @@ const About = () => {
 
                   <button
                     type="submit"
-                    className="w-full h-14 rounded-md font-semibold text-[14px] uppercase tracking-[0.08em] transition-all duration-200 hover:brightness-110 flex items-center justify-center gap-2"
+                    disabled={submitting}
+                    className="w-full h-14 rounded-md font-semibold text-[14px] uppercase tracking-[0.08em] transition-all duration-200 hover:brightness-110 flex items-center justify-center gap-2 disabled:opacity-60"
                     style={{
                       background: "linear-gradient(135deg, #b8860b, #d4a017)",
                       color: "#0d0f12",
                       boxShadow: "none",
                     }}
                   >
-                    Получить бесплатный аудит
-                    <ArrowRight className="h-5 w-5" />
+                    {submitting ? (
+                      <><span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> Отправляем...</>
+                    ) : (
+                      <>Получить бесплатный аудит <ArrowRight className="h-5 w-5" /></>
+                    )}
                   </button>
 
                   <p className="text-center text-[12px] pt-1" style={{ color: "#4a5568" }}>
-                    Ответим в течение 2 часов · Без спама
+                    Нажимая «Получить бесплатный аудит», вы соглашаетесь с{" "}
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "#4a7fa5", textDecoration: "underline" }}>
+                      политикой конфиденциальности
+                    </a>
                   </p>
                 </form>
               </FadeIn>

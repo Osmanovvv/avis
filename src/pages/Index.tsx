@@ -80,7 +80,7 @@ const HeroSection = ({ heroData }: { heroData?: { line1: string; line2: string; 
       <div className="absolute inset-0 overflow-hidden">
         {isMobile ? (
           <img
-            src="/hero-poster.jpg"
+            src="/hero-poster.webp"
             alt="Защита объектов от БПЛА. Антидроновые сетки АВИС"
             width={1920}
             height={1080}
@@ -94,7 +94,7 @@ const HeroSection = ({ heroData }: { heroData?: { line1: string; line2: string; 
             loop
             playsInline
             preload="none"
-            poster="/hero-poster.jpg"
+            poster="/hero-poster.webp"
             className="absolute inset-0 w-full h-full object-cover"
             style={{ filter: "brightness(0.32) saturate(0.35)" }}
           >
@@ -198,7 +198,7 @@ const HeroSection = ({ heroData }: { heroData?: { line1: string; line2: string; 
 };
 
 
-const VideoShowcase = () => (
+const VideoShowcase = ({ videoSlots }: { videoSlots?: { video01_poster?: string; video01_mp4?: string; video02_poster?: string; video02_mp4?: string } }) => (
   <section style={{ background: "#090b0e" }} className="py-14 px-4 lg:py-[96px] lg:px-[6vw]">
     {/* Header */}
     <div className="flex items-start justify-between mb-10">
@@ -220,7 +220,8 @@ const VideoShowcase = () => (
       <FadeIn>
         <div className="h-[220px] lg:h-[420px]">
           <VideoCard
-            poster={netsPerimeter}
+            poster={videoSlots?.video01_poster || netsPerimeter}
+            src={videoSlots?.video01_mp4}
             number="01"
             title="Периметровая защита"
             large
@@ -230,7 +231,8 @@ const VideoShowcase = () => (
       <FadeIn delay={0.12}>
         <div className="h-[180px] lg:h-[420px]">
           <VideoCard
-            poster={caseSubstation}
+            poster={videoSlots?.video02_poster || caseSubstation}
+            src={videoSlots?.video02_mp4}
             number="02"
             title="Фасадная защита"
             posterFilter="brightness(0.55) saturate(0.3)"
@@ -356,7 +358,7 @@ const Index = () => {
         </div>
       </div>
 
-      <VideoShowcase />
+      <VideoShowcase videoSlots={content?.videoSlots as any} />
       <LeadCaptureForm />
     </div>
   );

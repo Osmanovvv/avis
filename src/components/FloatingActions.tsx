@@ -62,25 +62,8 @@ const QuickFormModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (
     if (digits.length !== 10) { setError("Введите 10 цифр номера"); return; }
     setLoading(true);
     try {
-      await api.createLead(`+7${digits}`, "", "popup");
-      const token = import.meta.env.VITE_TG_BOT_TOKEN;
-      const chatId = import.meta.env.VITE_TG_CHAT_ID;
-      if (!token || !chatId || token === "your_bot_token") {
-        setDone(true);
-        return;
-      }
-      const text = [
-        "📩 *Новая заявка с сайта*",
-        `📞 Телефон: +7${digits}`,
-        `📄 Страница: обратный звонок (popup)`,
-        `🕐 ${new Date().toLocaleString("ru-RU")}`,
-      ].join("\n");
-      const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
-      });
-      if (res.ok) { setDone(true); } else { setError("Ошибка отправки"); }
+      await api.createLead(formatPhone(digits), "", "popup");
+      setDone(true);
     } catch { setError("Ошибка отправки"); }
     finally { setLoading(false); }
   };
@@ -221,7 +204,7 @@ const FloatingActions = () => {
 
       {/* Desktop sidebar tab */}
       <div className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 hidden lg:block transition-all duration-500 ${showFab ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none"}`}>
-        <button onClick={() => setModalOpen(true)} className="group flex items-center justify-center rounded-l-lg shadow-xl transition-all duration-200 px-2.5 py-6 border border-r-0 border-highlight/30 hover:bg-highlight/10" style={{ background: "rgba(13,15,18,0.7)", writingMode: "vertical-rl", textOrientation: "mixed" }}>
+        <button onClick={() => setModalOpen(true)} aria-label="Аудит объекта" className="group flex items-center justify-center rounded-l-lg shadow-xl transition-all duration-200 px-2.5 py-6 border border-r-0 border-highlight/30 hover:bg-highlight/10" style={{ background: "rgba(13,15,18,0.7)", writingMode: "vertical-rl", textOrientation: "mixed" }}>
           <span className="text-[11px] font-light uppercase tracking-[0.15em] text-highlight rotate-180">
             Аудит объекта
           </span>

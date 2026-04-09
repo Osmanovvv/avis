@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import FadeIn from "@/components/FadeIn";
 import { ArrowRight } from "lucide-react";
-import { catalog, type Category, type Product } from "@/data/catalog";
+import { catalog as defaultCatalog, type Category, type Product } from "@/data/catalog";
+import { useContent } from "@/hooks/use-content";
 import SEO from "@/components/SEO";
 
 /* Placeholder icon SVG */
@@ -58,6 +59,16 @@ const ProductCard = ({ product }: { product: Product }) => (
 const Solutions = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeCategory = searchParams.get("category") || "all";
+  const { content } = useContent();
+
+  // Use catalog from API if available, fallback to hardcoded
+  const catalog: Category[] = useMemo(() => {
+    const apiCatalog = (content as any)?.catalog;
+    if (apiCatalog?.length && apiCatalog.some((c: any) => c.title && c.products?.length)) {
+      return apiCatalog;
+    }
+    return defaultCatalog;
+  }, [content]);
 
   const setCategory = (id: string) => {
     if (id === "all") {

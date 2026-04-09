@@ -29,3 +29,4 @@ public/hero-video-original.mp4
 .env.local
 .env.production
 api/uploads/
+deploy.py

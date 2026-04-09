@@ -6,6 +6,7 @@ import { useSettings } from "@/hooks/use-settings";
 
 const navLinks = [
   { label: "Главная", path: "/" },
+  { label: "Отрасли", path: "/industries" },
   { label: "Решения", path: "/solutions" },
   { label: "Проекты", path: "/cases" },
   { label: "О компании", path: "/about" },
@@ -40,12 +41,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-[30%_30%_40%] gap-10 md:gap-6">
           {/* Brand */}
           <div className="order-1">
-            <span
-              className="block text-[16px] font-light uppercase"
-              style={{ letterSpacing: "0.22em", color: "#e8eaf0" }}
-            >
-              АВИС
-            </span>
+            <img src="/logo-avis-header.webp" alt="АВИС" width={40} height={40} className="h-[40px] w-auto object-contain" />
             <p className="mt-2 max-w-[200px]" style={{ fontSize: 13, color: "#8a95a3" }}>
               Инженерная защита объектов от БПЛА
             </p>

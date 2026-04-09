@@ -127,11 +127,11 @@ const About = () => {
           <FadeIn>
             <div className="text-center max-w-3xl mx-auto">
               <img
-                src="/logo-avis.jpg"
+                src="/logo-avis-about.webp"
                 alt="Логотип АВИС — строительная компания"
-                width={180}
-                height={180}
-                className="mx-auto mb-10 rounded-md"
+                width={160}
+                height={160}
+                className="mx-auto mb-10 rounded-lg"
               />
 
               <span className="text-[11px] uppercase tracking-[0.15em] text-highlight font-light block mb-6">

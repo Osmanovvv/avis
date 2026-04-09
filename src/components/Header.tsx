@@ -8,10 +8,11 @@ import { useContent } from "@/hooks/use-content";
 
 const navItems = [
   { label: "Главная", path: "/", idx: "001" },
-  { label: "Решения", path: "/solutions", idx: "002", hasMega: true },
-  { label: "Проекты", path: "/cases", idx: "003" },
-  { label: "О компании", path: "/about", idx: "004" },
-  { label: "Контакты", path: "/contacts", idx: "005" },
+  { label: "Отрасли", path: "/industries", idx: "002" },
+  { label: "Решения", path: "/solutions", idx: "003", hasMega: true },
+  { label: "Проекты", path: "/cases", idx: "004" },
+  { label: "О компании", path: "/about", idx: "005" },
+  { label: "Контакты", path: "/contacts", idx: "006" },
 ];
 
 const PAGE_COUNTER: Record<string, string> = {
@@ -94,7 +95,7 @@ const Header = () => {
           {/* Logo + divider */}
           <div className="flex items-center flex-shrink-0">
             <Link to="/" className="flex items-center">
-              <span className="text-[14px] lg:text-[18px] font-light uppercase text-white" style={{ letterSpacing: "0.25em" }}>АВИС</span>
+              <img src="/logo-avis-header.webp" alt="АВИС" width={36} height={36} className="h-[32px] w-auto lg:h-[40px] object-contain" />
             </Link>
             <div className="hidden lg:block w-px h-5 bg-white/15 mx-6" />
           </div>

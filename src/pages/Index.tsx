@@ -1,69 +1,82 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import FadeIn from "@/components/FadeIn";
-import { ArrowRight } from "lucide-react";
+import { CheckCircle2, FileText, Mail, ArrowRight, Phone, Send, ChevronDown } from "lucide-react";
 import SolutionsCatalog from "@/components/SolutionsCatalog";
-import LeadCaptureForm from "@/components/LeadCaptureForm";
-import VideoCard from "@/components/VideoCard";
-import netsPerimeter from "@/assets/catalog/nets-perimeter.webp";
-import caseSubstation from "@/assets/case-energy-substation.webp";
+import VideoSection from "@/components/VideoSection";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useCountUp, useStaggerReveal } from "@/hooks/use-animations";
 import SEO from "@/components/SEO";
 import { useContent } from "@/hooks/use-content";
+import { useSettings } from "@/hooks/use-settings";
 
 const defaultStats = [
-  { value: "200+", label: "объектов", numeric: 200, suffix: "+" },
-  { value: "12", label: "лет опыта", numeric: 12 },
-  { value: "5", label: "изготовление", numeric: 5 },
-  { value: "100%", label: "производство", numeric: 100, suffix: "%" },
+  { value: "200+", label: "объектов" },
+  { value: "12", label: "лет опыта" },
+  { value: "5", label: "изготовление" },
+  { value: "100%", label: "производство" },
 ];
 
-function parseStatValue(value: string): { numeric: number; suffix: string; prefix: string } {
+function parseStatValue(value: string): { num: number; suffix: string } {
   const match = value.match(/^([^\d]*)(\d+)(.*)$/);
-  if (!match) return { numeric: 0, suffix: "", prefix: "" };
-  return { numeric: parseInt(match[2], 10), suffix: match[3] || "", prefix: match[1] || "" };
+  if (!match) return { num: 0, suffix: "" };
+  return { num: parseInt(match[2], 10), suffix: match[3] || "" };
 }
 
-/* ── Animated counter ── */
-const AnimatedNumber = ({ target, suffix = "", prefix = "" }: { target: number; suffix?: string; prefix?: string }) => {
-  const [count, setCount] = useState(0);
-  const [started, setStarted] = useState(false);
-  const ref = useRef<HTMLSpanElement>(null);
+/* ── Animated stat card ── */
+const StatCard = ({ value, label }: { value: string; label: string }) => {
+  const { num, suffix } = parseStatValue(value);
+  const isNumeric = num > 0;
+  const { count, ref } = useCountUp({
+    end: num,
+    duration: num > 100 ? 1500 : 1000,
+    enabled: isNumeric,
+  });
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setStarted(true); obs.disconnect(); } },
-      { threshold: 0.3 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!started) return;
-    const duration = 1200;
-    const start = performance.now();
-    const step = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.round(eased * target));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [started, target]);
-
-  return <span ref={ref}>{prefix}{count}{suffix}</span>;
+  return (
+    <div
+      ref={ref}
+      className="rounded-lg text-center py-6 px-4 md:py-8 transition-shadow duration-300 hover:shadow-[0_0_0_1px_rgba(74,127,165,0.3)]"
+      style={{
+        background: "rgba(255,255,255,0.02)",
+        border: "1px solid rgba(255,255,255,0.05)",
+        borderTop: "2px solid rgba(74,127,165,0.5)",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "clamp(2rem, 6vw, 2.5rem)",
+          fontWeight: 700,
+          color: "#ffffff",
+          lineHeight: 1,
+          letterSpacing: "-0.02em",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {isNumeric ? `${count}${suffix}` : value}
+      </div>
+      <div className="mt-2" style={{ fontSize: "0.75rem", color: "#7a8394" }}>
+        {label}
+      </div>
+    </div>
+  );
 };
 
-/* ── Hero — full-viewport, no-scroll ── */
-const HeroSection = ({ heroData }: { heroData?: { line1: string; line2: string; subtitle: string } }) => {
+/* ── Hero — full-viewport, centered ── */
+const HeroSection = ({
+  heroData,
+  telHref,
+  tgHref,
+}: {
+  heroData?: { line1: string; line2: string; subtitle: string };
+  telHref: string;
+  tgHref: string;
+}) => {
   const gridRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
   useEffect(() => {
+    if (isMobile) return;
     const handleMouse = (e: MouseEvent) => {
       if (!gridRef.current) return;
       const x = (e.clientX / window.innerWidth - 0.5) * 20;
@@ -72,178 +85,394 @@ const HeroSection = ({ heroData }: { heroData?: { line1: string; line2: string; 
     };
     window.addEventListener("mousemove", handleMouse);
     return () => window.removeEventListener("mousemove", handleMouse);
-  }, []);
+  }, [isMobile]);
+
+  const scrollDown = () => {
+    window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+  };
+
+  const line1 = heroData?.line1 || "ЗАЩИТА ОБЪЕКТОВ ОТ БПЛА";
+  const line2 = heroData?.line2 || "";
+  const subtitle = heroData?.subtitle || "СЕТКИ · ОГРАЖДЕНИЯ · УКРЫТИЯ";
 
   return (
-    <section className="relative overflow-hidden flex items-center noise-overlay h-[100svh] min-h-[100svh] md:h-screen md:min-h-screen">
-      {/* Video / Poster background */}
+    <section className="relative overflow-hidden flex items-center justify-center noise-overlay h-[100svh] min-h-[100svh] md:h-screen md:min-h-screen">
       <div className="absolute inset-0 overflow-hidden">
         <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="none"
-            poster="/hero-poster.webp"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ filter: "brightness(0.32) saturate(0.35)", objectPosition: isMobile ? "center 20%" : undefined }}
-          >
-            <source src="/hero-video.webm" type="video/webm" />
-            <source src="/hero-video.mp4" type="video/mp4" />
-          </video>
-
-        {/* Gradient overlay */}
+          autoPlay muted loop playsInline
+          poster="/hero-poster.webp"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: isMobile ? "brightness(0.3) saturate(0.35)" : "brightness(0.32) saturate(0.35)" }}
+          preload="none"
+        >
+          <source src="/hero-video.webm" type="video/webm" />
+          <source src="/hero-video.mp4" type="video/mp4" />
+        </video>
         <div
           className="absolute inset-0"
           style={{
             background: isMobile
-              ? "linear-gradient(to bottom, rgba(8,10,14,0.82) 0%, rgba(8,10,14,0.82) 100%)"
-              : "linear-gradient(to right, rgba(8,10,14,0.90) 0%, rgba(8,10,14,0.85) 40%, rgba(8,10,14,0.25) 100%)",
+              ? "linear-gradient(to bottom, rgba(8,10,14,0.4) 0%, rgba(8,10,14,0.85) 60%, rgba(8,10,14,0.95) 100%)"
+              : "radial-gradient(ellipse at 30% 50%, rgba(8,10,14,0.65) 0%, rgba(8,10,14,0.88) 70%)",
           }}
         />
-        {/* Bottom fade */}
         <div
-          className="absolute bottom-0 left-0 right-0 h-[80px] pointer-events-none"
+          className="absolute bottom-0 left-0 right-0 h-[100px] pointer-events-none"
           style={{ background: "linear-gradient(to bottom, transparent, hsl(220 18% 5%))" }}
         />
       </div>
 
-      {/* Animated grid lines */}
-      <div
-        ref={gridRef}
-        className="absolute inset-[-40px] pointer-events-none transition-transform ease-out"
-        style={{
-          transitionDuration: '800ms',
-          backgroundImage:
-            "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
-          backgroundSize: "80px 80px",
-        }}
-      />
+      {!isMobile && (
+        <div
+          ref={gridRef}
+          className="absolute inset-[-40px] pointer-events-none transition-transform duration-[800ms] ease-out"
+          style={{
+            backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
+            backgroundSize: "80px 80px",
+          }}
+        />
+      )}
 
-      {/* Content — vertically centered */}
       <div
-        className="relative z-10 flex flex-col w-full"
-        style={{
-          height: isMobile ? "calc(100svh - 80px)" : "calc(100vh - 96px)",
-          paddingLeft: isMobile ? "24px" : "6vw",
-          paddingRight: isMobile ? "24px" : "50%",
-          justifyContent: isMobile ? "flex-end" : "center",
-          paddingBottom: isMobile ? "80px" : "0",
-        }}
+        className={`relative z-10 w-full flex flex-col ${isMobile ? "items-start text-left px-5" : "items-center text-center px-[6vw]"}`}
+        style={{ maxWidth: 960, marginTop: isMobile ? 20 : 0, marginLeft: isMobile ? 0 : "auto", marginRight: isMobile ? 0 : "auto" }}
       >
-        <div>
-          <FadeIn>
-            <h1 className="text-foreground drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]" style={{ margin: 0 }}>
-              <span
-                className="block"
-                style={{
-                  fontSize: isMobile ? "clamp(28px, 7.5vw, 40px)" : "clamp(32px, 3.8vw, 60px)",
-                  lineHeight: 1.0,
-                  letterSpacing: "0.01em",
-                  fontWeight: 200,
-                }}
-              >
-                {heroData?.line1 || "ЗАЩИТА ОБЪЕКТОВ ОТ БПЛА"}
-              </span>
+        <FadeIn>
+          <h1 className="drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]" style={{ margin: 0 }}>
+            <span
+              className="block"
+              style={{
+                fontSize: isMobile ? "clamp(2.4rem, 10.5vw, 3.2rem)" : "clamp(3.5rem, 5.5vw, 5rem)",
+                lineHeight: 0.95,
+                letterSpacing: "-0.03em",
+                fontWeight: 800,
+                background: "linear-gradient(135deg, #ffffff 0%, #c8d4e0 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              {line1}
+            </span>
+            {line2 && (
               <span
                 className="block text-highlight"
                 style={{
-                  fontSize: isMobile ? "clamp(22px, 6vw, 34px)" : "clamp(26px, 3.2vw, 50px)",
-                  lineHeight: 1.0,
-                  letterSpacing: "0.01em",
-                  fontWeight: 200,
-                  marginTop: 0,
+                  fontSize: isMobile ? "clamp(1.8rem, 7vw, 2.4rem)" : "clamp(2.2rem, 3.6vw, 3.4rem)",
+                  lineHeight: 1.05,
+                  fontWeight: 300,
+                  marginTop: 8,
+                  color: "#4a7fa5",
                 }}
               >
-                {heroData?.line2 || "СЕТКИ, ОГРАЖДЕНИЯ, УКРЫТИЯ"}
+                {line2}
               </span>
-            </h1>
-          </FadeIn>
-          <FadeIn delay={0.1}>
-            <p
-              className="drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)] line-clamp-2 md:line-clamp-none"
-              style={{ marginTop: 16, maxWidth: 400, fontSize: 14, lineHeight: 1.4, color: "rgba(176, 186, 200, 0.7)" }}
+            )}
+          </h1>
+        </FadeIn>
+
+        <FadeIn delay={0.1}>
+          <p
+            style={{
+              fontSize: isMobile ? "1rem" : "clamp(1.1rem, 2vw, 1.5rem)",
+              letterSpacing: isMobile ? "0.04em" : "0.12em",
+              fontWeight: 600,
+              color: "#4a7fa5",
+              marginTop: isMobile ? 8 : 16,
+            }}
+          >
+            {subtitle}
+          </p>
+        </FadeIn>
+
+        <FadeIn delay={0.15}>
+          <div
+            className={`flex ${isMobile ? "flex-col gap-[10px]" : "flex-wrap justify-center gap-x-6 gap-y-2"}`}
+            style={{ marginTop: isMobile ? 20 : 28 }}
+          >
+            {["Собственное производство", "Монтаж\u00a0от\u00a05\u00a0дней", "Проектирование\u00a0по\u00a0СП\u00a0542"].map((text) => (
+              <div key={text} className="flex items-center gap-2">
+                <CheckCircle2 size={isMobile ? 16 : 13} className="shrink-0" style={{ color: "#4a7fa5" }} />
+                <span style={{ fontSize: isMobile ? 14 : 13, color: "#7a8394" }}>{text}</span>
+              </div>
+            ))}
+          </div>
+        </FadeIn>
+
+        <FadeIn delay={0.25} className={isMobile ? "w-full" : ""}>
+          <div
+            className="flex flex-col sm:flex-row gap-[10px] sm:gap-3"
+            style={{ marginTop: isMobile ? 28 : 44, width: isMobile ? "100%" : "auto" }}
+          >
+            <a
+              href={telHref}
+              className="btn-gold inline-flex items-center justify-center gap-2.5 font-semibold relative overflow-hidden"
+              style={{
+                width: isMobile ? "100%" : 260,
+                height: 52,
+                borderRadius: 12,
+                fontSize: isMobile ? 15 : 14,
+                letterSpacing: "0.04em",
+              }}
             >
-              {heroData?.subtitle || "Пассивная инженерная защита. От аудита до монтажа под ключ"}
-            </p>
-          </FadeIn>
-          <FadeIn delay={0.2}>
-            <div style={{ marginTop: 20 }}>
-              <Link to="/contacts" className="inline-block w-full md:w-auto">
-                <Button
-                  variant="hero"
-                  className="whitespace-nowrap w-full max-w-[360px] md:w-auto md:min-w-fit h-[52px] text-[12px] md:text-[13px] font-semibold tracking-[0.1em] px-6 md:px-8 inline-flex items-center justify-center gap-2 animate-hero-pulse"
-                >
-                  ЗАПРОСИТЬ АУДИТ ОБЪЕКТА
-                  <span className="shrink-0">→</span>
-                </Button>
-              </Link>
+              <Phone size={16} />
+              Запросить аудит
+              <ArrowRight size={15} />
+            </a>
+            <a
+              href={tgHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="tg-btn inline-flex items-center justify-center gap-2.5 font-semibold transition-all duration-200"
+              style={{
+                width: isMobile ? "100%" : 220,
+                height: 52,
+                borderRadius: 12,
+                border: "1px solid rgba(255,255,255,0.15)",
+                background: "rgba(255,255,255,0.04)",
+                color: "#c0cdd8",
+                fontSize: isMobile ? 15 : 14,
+                letterSpacing: "0.04em",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              <Send size={15} />
+              Telegram
+            </a>
+          </div>
+        </FadeIn>
+      </div>
+
+      <button
+        onClick={scrollDown}
+        className="absolute z-10 flex flex-col items-center gap-2 transition-opacity duration-500 hover:opacity-100"
+        style={{
+          bottom: isMobile ? 24 : 40,
+          left: "50%",
+          transform: "translateX(-50%)",
+          opacity: 0.4,
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          color: "#4a7fa5",
+        }}
+      >
+        <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase" }}>
+          Услуги
+        </span>
+        <ChevronDown size={18} className="animate-bounce" />
+      </button>
+    </section>
+  );
+};
+
+/* ── Industries strip (A-специфика — сохраняется по п.7 ТЗ) ── */
+const IndustriesStrip = () => (
+  <div
+    className="w-full relative overflow-hidden z-[1] flex-col md:flex-row items-start md:items-center gap-3 md:gap-6 flex"
+    style={{
+      padding: "16px 20px",
+      background: "rgba(255,255,255,0.02)",
+      borderTop: "1px solid rgba(255,255,255,0.05)",
+      borderBottom: "1px solid rgba(255,255,255,0.05)",
+    }}
+  >
+    <style>{`.tags-scroll::-webkit-scrollbar{display:none}`}</style>
+    <span
+      className="flex-shrink-0 uppercase whitespace-nowrap text-[9px] md:text-[10px]"
+      style={{ color: "#4a5568", letterSpacing: "0.15em" }}
+    >
+      ОТРАСЛИ ПРИМЕНЕНИЯ
+    </span>
+    <div
+      className="tags-scroll flex gap-2 items-center flex-nowrap md:flex-wrap overflow-x-auto md:overflow-x-visible"
+      style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+    >
+      {["Энергетика и ТЭК", "Транспорт", "Промышленность", "Гособъекты", "КИИ", "ОПК"].map((tag) => (
+        <Link
+          key={tag}
+          to="/solutions"
+          className="flex-shrink-0 rounded-[20px] px-4 py-1.5 text-[12px] transition-colors duration-200"
+          style={{
+            background: "transparent",
+            border: "1px solid rgba(74,127,165,0.25)",
+            color: "#7a8394",
+          }}
+          onMouseEnter={(e) => {
+            (e.target as HTMLElement).style.borderColor = "#4a7fa5";
+            (e.target as HTMLElement).style.color = "#c0cdd8";
+          }}
+          onMouseLeave={(e) => {
+            (e.target as HTMLElement).style.borderColor = "rgba(74,127,165,0.25)";
+            (e.target as HTMLElement).style.color = "#7a8394";
+          }}
+        >
+          {tag}
+        </Link>
+      ))}
+    </div>
+  </div>
+);
+
+/* ── Clients data ── */
+const clientsCol1 = [
+  'ОАО «ИНТЕР РАО – Электрогенерация»',
+  'Межрайонная ИФНС №\u00a07 по Краснодарскому краю',
+  'ФГБУ «Объединённый санаторий «Сочи»',
+  'ГБУ КК «Дворец спорта Большой»',
+  'ООО «КВАРЦ Групп»',
+  'АО «МОРЕМОЛЛ»',
+  'НАО «Центр Омега»',
+  'ОАО «Отель «Звёздный»',
+  'ПАО «ОГК-2»',
+];
+const clientsCol2 = [
+  'АО «Галерея Краснодар»',
+  'МУП «Водоканал» города Сочи',
+  'ФГУП «Росморпорт»',
+  'ПАО «Калужский турбинный завод»',
+  'АО «Силовые машины»',
+  'ООО «Группа Компаний „Rusagro"»',
+  'УПРО «Объединённый санаторий „Русь"»',
+];
+const allClients = [...clientsCol1, ...clientsCol2];
+
+const certificates = [
+  { name: "СРО", href: "/documents/sro-avis.pdf" },
+  { name: "Свидетельство НАЛ", href: "/documents/nalog-uchet.pdf" },
+  { name: "Свидетельство ГРН", href: "/documents/grn.pdf" },
+  { name: "ISO 14001", href: "/documents/iso-14001.pdf" },
+  { name: "ISO 9001", href: "/documents/iso-9001.pdf" },
+  { name: "ISO 45001", href: "/documents/iso-45001.pdf" },
+];
+
+const ClientRow = ({ name }: { name: string }) => (
+  <div
+    className="flex items-center gap-3 transition-colors duration-200 hover:bg-[rgba(74,127,165,0.05)]"
+    style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+  >
+    <span className="flex-shrink-0 rounded-full" style={{ width: 4, height: 4, background: "#4a7fa5" }} />
+    <span style={{ fontSize: 13, color: "#c0cdd8", lineHeight: 1.4 }}>{name}</span>
+  </div>
+);
+
+/* ── Trust section ── */
+const TrustSection = ({
+  stats,
+  email,
+}: {
+  stats: Array<{ value: string; label: string }>;
+  email: string;
+}) => {
+  const { containerRef, revealed } = useStaggerReveal();
+  const isMobile = useIsMobile();
+  const [showAllClients, setShowAllClients] = useState(false);
+
+  const visibleClients = isMobile && !showAllClients ? allClients.slice(0, 6) : allClients;
+  const hiddenCount = allClients.length - 6;
+
+  return (
+    <section style={{ background: "#090b0e" }}>
+      <div
+        className="mx-auto"
+        style={{
+          maxWidth: 1200,
+          padding: isMobile ? "48px 20px" : "80px 40px",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <div ref={containerRef} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {stats.map((stat, i) => (
+            <div
+              key={stat.label + i}
+              style={{
+                opacity: revealed ? 1 : 0,
+                transform: revealed ? "translateY(0)" : "translateY(24px)",
+                transition: `opacity 0.5s cubic-bezier(0.25,0.46,0.45,0.94) ${i * (isMobile ? 40 : 80)}ms, transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94) ${i * (isMobile ? 40 : 80)}ms`,
+              }}
+            >
+              <StatCard value={stat.value} label={stat.label} />
             </div>
-          </FadeIn>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 56 }}>
+          <h3 style={{ fontSize: "0.6875rem", textTransform: "uppercase", letterSpacing: "0.18em", color: "#4a7fa5", marginBottom: 24, fontWeight: 600 }}>
+            Наши заказчики
+          </h3>
+
+          {isMobile ? (
+            <>
+              <div style={{ overflow: "hidden", transition: "max-height 0.4s ease", maxHeight: showAllClients ? allClients.length * 60 : 6 * 60 }}>
+                {visibleClients.map((c) => (<ClientRow key={c} name={c} />))}
+              </div>
+              {!showAllClients && (
+                <button
+                  onClick={() => setShowAllClients(true)}
+                  style={{ fontSize: 13, color: "#4a7fa5", background: "transparent", border: "none", cursor: "pointer", padding: "14px 20px", width: "100%", textAlign: "left" }}
+                >
+                  Показать все заказчики (ещё {hiddenCount})
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="grid grid-cols-2" style={{ gap: 0 }}>
+              <div>{clientsCol1.map((c) => (<ClientRow key={c} name={c} />))}</div>
+              <div>{clientsCol2.map((c) => (<ClientRow key={c} name={c} />))}</div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginTop: 48 }}>
+          <h3 style={{ fontSize: "0.6875rem", textTransform: "uppercase", letterSpacing: "0.18em", color: "#4a7fa5", marginBottom: 24, fontWeight: 600 }}>
+            Сертификаты и документы
+          </h3>
+
+          <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}>
+            {certificates.map((cert) => (
+              <a
+                key={cert.name}
+                href={cert.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cert-link flex-shrink-0 flex items-center gap-2.5 rounded-[10px] transition-all duration-200"
+                style={{ width: 160, height: 56, padding: "0 16px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", textDecoration: "none" }}
+              >
+                <FileText size={16} style={{ color: "#4a7fa5", flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#ffffff", lineHeight: 1.3 }}>{cert.name}</div>
+                  <div style={{ fontSize: 10, color: "#4a7fa5" }}>Открыть PDF</div>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          {email && (
+            <a href={`mailto:${email}`} className="inline-flex items-center gap-2 mt-4" style={{ fontSize: 13, color: "#7a8394", textDecoration: "none" }}>
+              <Mail size={14} style={{ color: "#4a7fa5" }} />
+              {email}
+            </a>
+          )}
         </div>
       </div>
     </section>
   );
 };
 
-
-const VideoShowcase = ({ videoSlots }: { videoSlots?: { video01_poster?: string; video01_mp4?: string; video02_poster?: string; video02_mp4?: string } }) => (
-  <section style={{ background: "#090b0e" }} className="py-14 px-4 lg:py-[96px] lg:px-[6vw]">
-    {/* Header */}
-    <div className="flex items-start justify-between mb-10">
-      <div>
-        <span className="block uppercase" style={{ fontSize: 10, color: "#4a7fa5", letterSpacing: "0.15em" }}>
-          Показываем объекты
-        </span>
-        <h2 className="mt-2 text-[22px] lg:text-[clamp(22px,2.5vw,36px)] leading-[1.2] lg:leading-normal" style={{ fontWeight: 200, color: "#d4dae2", letterSpacing: "0.03em", margin: 0, marginTop: 8 }}>
-          Инженерная защита в действии
-        </h2>
-      </div>
-      <span className="hidden lg:block self-end pb-1" style={{ fontSize: 13, color: "#4a5568" }}>
-        Нажмите на ролик для просмотра
-      </span>
-    </div>
-
-    {/* Grid */}
-    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[62fr_38fr] lg:gap-4">
-      <FadeIn>
-        <div className="h-[220px] lg:h-[420px]">
-          <VideoCard
-            poster={videoSlots?.video01_poster || netsPerimeter}
-            src={videoSlots?.video01_mp4}
-            number="01"
-            title="Периметровая защита"
-            large
-          />
-        </div>
-      </FadeIn>
-      <FadeIn delay={0.12}>
-        <div className="h-[180px] lg:h-[420px]">
-          <VideoCard
-            poster={videoSlots?.video02_poster || caseSubstation}
-            src={videoSlots?.video02_mp4}
-            number="02"
-            title="Фасадная защита"
-            posterFilter="brightness(0.55) saturate(0.3)"
-          />
-        </div>
-      </FadeIn>
-    </div>
-  </section>
-);
-
 const Index = () => {
   const { content } = useContent();
+  const { settings } = useSettings();
 
   const stats = useMemo(() => {
-    if (content?.stats?.length && content.stats.some((s) => s.value)) {
-      return content.stats.map((s) => {
-        const parsed = parseStatValue(s.value);
-        return { value: s.value, label: s.label, ...parsed };
-      });
-    }
+    if (content?.stats?.length && content.stats.some((s) => s.value)) return content.stats;
     return defaultStats;
   }, [content]);
+
+  const phone = content?.contacts.phone || settings?.phone || "";
+  const tgUsername = (content?.contacts.telegram || settings?.telegram || "").replace(/^@/, "");
+  const email = content?.contacts.email || settings?.email || "";
+  const telHref = phone ? `tel:${phone.replace(/[^+\d]/g, "")}` : "#";
+  const tgHref = tgUsername ? `https://t.me/${tgUsername}` : "#";
 
   return (
     <div>
@@ -253,102 +482,11 @@ const Index = () => {
         keywords="защита от бпла, защита объектов от бпла, антидроновые сетки, сетки защита от бпла, пассивная защита от бпла"
         path="/"
       />
-      <HeroSection heroData={content?.hero} />
+      <HeroSection heroData={content?.hero} telHref={telHref} tgHref={tgHref} />
+      <IndustriesStrip />
       <SolutionsCatalog />
-
-      {/* Industries strip */}
-      <div
-        className="w-full relative overflow-hidden z-[1] flex-col md:flex-row items-start md:items-center gap-3 md:gap-6 flex"
-        style={{
-          padding: "16px 20px",
-          background: "rgba(255,255,255,0.02)",
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-          borderBottom: "1px solid rgba(255,255,255,0.05)",
-          marginTop: 0,
-        }}
-      >
-        <style>{`.tags-scroll::-webkit-scrollbar{display:none}`}</style>
-        <span
-          className="flex-shrink-0 uppercase whitespace-nowrap text-[9px] md:text-[10px]"
-          style={{ color: "#4a5568", letterSpacing: "0.15em" }}
-        >
-          ОТРАСЛИ ПРИМЕНЕНИЯ
-        </span>
-        <div
-          className="tags-scroll flex gap-2 items-center flex-nowrap md:flex-wrap overflow-x-auto md:overflow-x-visible"
-          style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
-        >
-          {["Энергетика и ТЭК", "Транспорт", "Промышленность", "Гособъекты", "КИИ", "ОПК"].map((tag) => (
-            <Link
-              key={tag}
-              to="/solutions"
-              className="flex-shrink-0 rounded-[20px] px-4 py-1.5 text-[12px] transition-colors duration-200"
-              style={{
-                background: "transparent",
-                border: "1px solid rgba(74,127,165,0.25)",
-                color: "#7a8394",
-              }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLElement).style.borderColor = "#4a7fa5";
-                (e.target as HTMLElement).style.color = "#c0cdd8";
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLElement).style.borderColor = "rgba(74,127,165,0.25)";
-                (e.target as HTMLElement).style.color = "#7a8394";
-              }}
-            >
-              {tag}
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Stats bar */}
-      <div
-        style={{
-          background: "rgba(255,255,255,0.02)",
-          borderTop: "1px solid rgba(255,255,255,0.04)",
-          padding: "48px 6vw",
-        }}
-      >
-        <div className="grid grid-cols-2 md:grid-cols-4">
-          {stats.map((s, i) => (
-            <div
-              key={s.label}
-              className={[
-                "text-center py-6 px-4 md:py-0",
-                // Desktop: right border except last
-                i < 3 ? "md:border-r md:border-[rgba(255,255,255,0.05)]" : "",
-                // Mobile 2x2: bottom border on first row
-                i < 2 ? "border-b border-[rgba(255,255,255,0.05)] md:border-b-0" : "",
-                // Mobile 2x2: right border on left column
-                i % 2 === 0 ? "border-r border-[rgba(255,255,255,0.05)] md:border-r-0" + (i < 3 ? " md:border-r md:border-[rgba(255,255,255,0.05)]" : "") : "",
-              ].join(" ")}
-            >
-              <div
-                className="font-extralight leading-none"
-                style={{
-                  fontSize: "clamp(40px, 5vw, 64px)",
-                  color: "#c0cdd8",
-                  letterSpacing: "-0.02em",
-                  fontWeight: 200,
-                }}
-              >
-                <AnimatedNumber target={s.numeric} suffix={s.suffix} />
-              </div>
-              <div
-                className="uppercase mt-2"
-                style={{ fontSize: 10, letterSpacing: "0.12em", color: "#4a5568" }}
-              >
-                {s.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <VideoShowcase videoSlots={content?.videoSlots as any} />
-      <LeadCaptureForm />
+      <VideoSection />
+      <TrustSection stats={stats} email={email} />
     </div>
   );
 };

@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 
+interface AdminServiceMaterial { name: string; photo?: string; specs: string; badge?: string }
+interface AdminServiceItem {
+  slug: string;
+  h1: string;
+  heroImage: string;
+  description: string;
+  materials: AdminServiceMaterial[];
+}
+
 interface ContentData {
   hero: { line1: string; line2: string; subtitle: string };
   stats: Array<{ value: string; label: string }>;
@@ -9,6 +18,7 @@ interface ContentData {
   contacts: { phone: string; email: string; telegram: string; address: string };
   videoSlots?: { video01_poster: string; video01_mp4: string; video02_poster: string; video02_mp4: string };
   catalog?: Array<{ id: string; title: string; products: Array<{ id: string; name: string; description: string; image: string }> }>;
+  services?: AdminServiceItem[];
 }
 
 // Shared cache so multiple components don't re-fetch
@@ -28,6 +38,7 @@ function fetchContent(): Promise<ContentData> {
       contacts: data.contacts || { phone: "", email: "", telegram: "", address: "" },
       videoSlots: data.videoSlots || undefined,
       catalog: data.catalog || undefined,
+      services: data.services || undefined,
     };
     return cache;
   }).catch(() => {
@@ -70,4 +81,4 @@ export function invalidateContentCache() {
   fetchPromise = null;
 }
 
-export type { ContentData };
+export type { ContentData, AdminServiceItem, AdminServiceMaterial };

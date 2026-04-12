@@ -4,8 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/lib/api";
-import { Check, Loader2, Upload, X, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, Loader2, Upload, X, Plus, Trash2, ChevronDown, ChevronUp, Download } from "lucide-react";
 import { invalidateContentCache } from "@/hooks/use-content";
+import { services as defaultServicesData } from "@/data/services";
 
 interface CatalogProduct {
   id: string;
@@ -20,6 +21,21 @@ interface CatalogCategory {
   products: CatalogProduct[];
 }
 
+interface ServiceMaterial {
+  name: string;
+  photo?: string;
+  specs: string;
+  badge?: string;
+}
+
+interface ServiceItem {
+  slug: string;
+  h1: string;
+  heroImage: string;
+  description: string;
+  materials: ServiceMaterial[];
+}
+
 interface ContentData {
   hero: { line1: string; line2: string; subtitle: string };
   stats: Array<{ value: string; label: string }>;
@@ -27,6 +43,7 @@ interface ContentData {
   about: { description: string; advantages: string[] };
   contacts: { phone: string; email: string; telegram: string; address: string };
   catalog: CatalogCategory[];
+  services: ServiceItem[];
 }
 
 const defaultContent: ContentData = {
@@ -36,6 +53,7 @@ const defaultContent: ContentData = {
   about: { description: "", advantages: ["", "", "", ""] },
   contacts: { phone: "", email: "", telegram: "", address: "" },
   catalog: [],
+  services: [],
 };
 
 const AdminContent = () => {
@@ -44,6 +62,7 @@ const AdminContent = () => {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
+  const [openServices, setOpenServices] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     api.getContent().then((data: any) => {
@@ -54,6 +73,7 @@ const AdminContent = () => {
         about: data.about || defaultContent.about,
         contacts: data.contacts || defaultContent.contacts,
         catalog: data.catalog || defaultContent.catalog,
+        services: data.services || defaultContent.services,
       });
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
@@ -68,6 +88,7 @@ const AdminContent = () => {
         api.updateContent("about", content.about),
         api.updateContent("contacts", content.contacts),
         api.updateContent("catalog", content.catalog),
+        api.updateContent("services", content.services),
       ]);
       invalidateContentCache();
       setSaved(true);
@@ -202,6 +223,94 @@ const AdminContent = () => {
 
   const toggleCategory = (id: string) => {
     setOpenCategories((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // ── Services (страницы /solutions/:slug) ──
+  const toggleService = (slug: string) =>
+    setOpenServices((prev) => ({ ...prev, [slug]: !prev[slug] }));
+
+  const importDefaultServices = () => {
+    if (content.services.length > 0 && !confirm("Перезаписать текущие услуги дефолтными?")) return;
+    const stripped: ServiceItem[] = defaultServicesData.map((s) => ({
+      slug: s.slug,
+      h1: s.h1,
+      heroImage: "",
+      description: s.description,
+      materials: s.materials.map((m) => ({ name: m.name, photo: "", specs: m.specs, badge: m.badge })),
+    }));
+    setContent((prev) => ({ ...prev, services: stripped }));
+  };
+
+  const addService = () => {
+    const slug = prompt("Slug услуги (латиница, без пробелов, например: shelters)")?.trim().toLowerCase();
+    if (!slug) return;
+    if (content.services.some((s) => s.slug === slug)) { alert("Такой slug уже есть"); return; }
+    setContent((prev) => ({
+      ...prev,
+      services: [...prev.services, { slug, h1: "", heroImage: "", description: "", materials: [] }],
+    }));
+    setOpenServices((prev) => ({ ...prev, [slug]: true }));
+  };
+
+  const removeService = (idx: number) => {
+    if (!confirm("Удалить услугу?")) return;
+    setContent((prev) => ({ ...prev, services: prev.services.filter((_, i) => i !== idx) }));
+  };
+
+  const updateService = (idx: number, field: keyof ServiceItem, value: string) => {
+    setContent((prev) => {
+      const services = [...prev.services];
+      services[idx] = { ...services[idx], [field]: value } as ServiceItem;
+      return { ...prev, services };
+    });
+  };
+
+  const handleServiceHero = async (idx: number, file: File) => {
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) { alert("Максимум 5MB"); return; }
+    try {
+      const { url } = await api.uploadMedia(file);
+      updateService(idx, "heroImage", url);
+    } catch { alert("Ошибка загрузки"); }
+  };
+
+  const addMaterial = (idx: number) => {
+    setContent((prev) => {
+      const services = [...prev.services];
+      const svc = { ...services[idx] };
+      svc.materials = [...svc.materials, { name: "", specs: "", photo: "", badge: "" }];
+      services[idx] = svc;
+      return { ...prev, services };
+    });
+  };
+
+  const removeMaterial = (sIdx: number, mIdx: number) => {
+    setContent((prev) => {
+      const services = [...prev.services];
+      const svc = { ...services[sIdx] };
+      svc.materials = svc.materials.filter((_, i) => i !== mIdx);
+      services[sIdx] = svc;
+      return { ...prev, services };
+    });
+  };
+
+  const updateMaterial = (sIdx: number, mIdx: number, field: keyof ServiceMaterial, value: string) => {
+    setContent((prev) => {
+      const services = [...prev.services];
+      const svc = { ...services[sIdx] };
+      const materials = [...svc.materials];
+      materials[mIdx] = { ...materials[mIdx], [field]: value };
+      svc.materials = materials;
+      services[sIdx] = svc;
+      return { ...prev, services };
+    });
+  };
+
+  const handleMaterialPhoto = async (sIdx: number, mIdx: number, file: File) => {
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) { alert("Максимум 5MB"); return; }
+    try {
+      const { url } = await api.uploadMedia(file);
+      updateMaterial(sIdx, mIdx, "photo", url);
+    } catch { alert("Ошибка загрузки"); }
   };
 
   if (loading) {
@@ -380,6 +489,119 @@ const AdminContent = () => {
                   <Button variant="outline" size="sm" onClick={() => addProduct(catIdx)} className="w-full gap-1">
                     <Plus className="w-3.5 h-3.5" /> Добавить карточку
                   </Button>
+                </div>
+              )}
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* ── Services (страницы /solutions/:slug) ── */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <CardTitle className="text-base font-medium">Услуги — детальные страницы /solutions/:slug</CardTitle>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={importDefaultServices} className="gap-1">
+                <Download className="w-4 h-4" /> Импорт дефолтов
+              </Button>
+              <Button variant="outline" size="sm" onClick={addService} className="gap-1">
+                <Plus className="w-4 h-4" /> Услуга
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {content.services.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Нет услуг. Нажмите «Импорт дефолтов» чтобы загрузить 6 базовых услуг, или «+ Услуга» для ручного добавления.
+            </p>
+          )}
+          {content.services.map((svc, sIdx) => (
+            <div key={svc.slug} className="border border-border rounded-lg overflow-hidden">
+              <div
+                className="flex items-center gap-2 px-3 py-2.5 cursor-pointer hover:bg-muted/30 transition-colors"
+                onClick={() => toggleService(svc.slug)}
+              >
+                {openServices[svc.slug] ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+                <span className="text-sm font-medium flex-1 truncate">{svc.h1 || svc.slug}</span>
+                <span className="text-xs text-muted-foreground shrink-0">/{svc.slug}</span>
+                <Button variant="ghost" size="icon" className="w-7 h-7 shrink-0" onClick={(e) => { e.stopPropagation(); removeService(sIdx); }}>
+                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                </Button>
+              </div>
+
+              {openServices[svc.slug] && (
+                <div className="px-3 pb-3 space-y-3 border-t border-border/50 pt-3">
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">Slug (URL)</label>
+                    <Input value={svc.slug} disabled className="text-base bg-muted/40" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">H1 заголовок</label>
+                    <Input value={svc.h1} onChange={(e) => updateService(sIdx, "h1", e.target.value)} className="text-base" />
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">Hero изображение</label>
+                    <div className="flex items-start gap-3">
+                      {svc.heroImage ? (
+                        <div className="relative w-32 h-[90px] rounded border border-border overflow-hidden shrink-0">
+                          <img src={svc.heroImage} alt="" className="w-full h-full object-cover" width={128} height={90} />
+                          <button type="button" onClick={() => updateService(sIdx, "heroImage", "")} className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80">
+                            <X className="w-3 h-3 text-white" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="w-32 h-[90px] rounded border-2 border-dashed border-border hover:border-muted-foreground flex flex-col items-center justify-center cursor-pointer shrink-0">
+                          <Upload className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground mt-0.5">Hero фото</span>
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleServiceHero(sIdx, f); e.target.value = ""; }} />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">Описание (абзацы разделять пустой строкой)</label>
+                    <Textarea value={svc.description} onChange={(e) => updateService(sIdx, "description", e.target.value)} rows={5} className="text-base" />
+                  </div>
+
+                  {/* Materials */}
+                  <div className="space-y-2 pt-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm text-muted-foreground">Материалы</label>
+                      <Button variant="outline" size="sm" onClick={() => addMaterial(sIdx)} className="gap-1 h-7">
+                        <Plus className="w-3.5 h-3.5" /> Материал
+                      </Button>
+                    </div>
+                    {svc.materials.map((mat, mIdx) => (
+                      <div key={mIdx} className="flex items-start gap-2 pb-3 border-b border-border/30 last:border-0 last:pb-0">
+                        {mat.photo ? (
+                          <div className="relative w-20 h-[60px] rounded border border-border overflow-hidden shrink-0">
+                            <img src={mat.photo} alt="" className="w-full h-full object-cover" width={80} height={60} />
+                            <button type="button" onClick={() => updateMaterial(sIdx, mIdx, "photo", "")} className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80">
+                              <X className="w-2.5 h-2.5 text-white" />
+                            </button>
+                          </div>
+                        ) : (
+                          <label className="w-20 h-[60px] rounded border-2 border-dashed border-border hover:border-muted-foreground flex flex-col items-center justify-center cursor-pointer shrink-0">
+                            <Upload className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span className="text-[9px] text-muted-foreground mt-0.5">Фото</span>
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleMaterialPhoto(sIdx, mIdx, f); e.target.value = ""; }} />
+                          </label>
+                        )}
+                        <div className="flex-1 space-y-1.5">
+                          <Input placeholder="Название материала" value={mat.name} onChange={(e) => updateMaterial(sIdx, mIdx, "name", e.target.value)} className="h-8 text-sm" />
+                          <Textarea placeholder="Характеристики" value={mat.specs} onChange={(e) => updateMaterial(sIdx, mIdx, "specs", e.target.value)} rows={2} className="text-sm" />
+                          <Input placeholder="Бейджи (через ' · ')" value={mat.badge || ""} onChange={(e) => updateMaterial(sIdx, mIdx, "badge", e.target.value)} className="h-8 text-sm" />
+                        </div>
+                        <Button variant="ghost" size="icon" className="w-7 h-7 shrink-0 mt-1" onClick={() => removeMaterial(sIdx, mIdx)}>
+                          <X className="w-3.5 h-3.5 text-muted-foreground" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

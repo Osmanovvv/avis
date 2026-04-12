@@ -1,0 +1,50 @@
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
+
+import { cn } from "@/lib/utils";
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-light ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 min-h-[52px] md:min-h-0 uppercase tracking-[0.1em]",
+  {
+    variants: {
+      variant: {
+        default: "bg-secondary text-foreground hover:bg-secondary/80",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline: "border border-highlight/40 bg-transparent text-highlight hover:bg-highlight hover:text-white",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-secondary hover:text-foreground",
+        link: "text-accent underline-offset-4 hover:underline",
+        hero: "btn-gold text-background font-semibold rounded-md tracking-[0.04em]",
+        "hero-outline": "border border-accent/30 text-accent bg-transparent hover:border-accent/60 hover:text-foreground rounded-md",
+        cta: "border border-highlight text-highlight bg-transparent hover:bg-highlight hover:text-white rounded-md font-light tracking-[0.1em]",
+      },
+      size: {
+        default: "h-10 px-5 py-2 md:h-10",
+        sm: "h-9 rounded-md px-3 md:h-9 min-h-0 md:min-h-0 text-[11px]",
+        lg: "h-12 rounded-md px-7 md:h-11",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  },
+);
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
+    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+  },
+);
+Button.displayName = "Button";
+
+export { Button, buttonVariants };

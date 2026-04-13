@@ -2,12 +2,46 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Phone, Send } from "lucide-react";
 import FadeIn from "@/components/FadeIn";
 import SEO from "@/components/SEO";
-import { getServiceBySlug } from "@/data/services";
+import { getServiceBySlug, defaultSteps } from "@/data/services";
+import { useContent } from "@/hooks/use-content";
 import NotFound from "./NotFound";
+
+function slugifyRu(input: string): string {
+  const m: Record<string, string> = {
+    а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"e",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",
+    с:"s",т:"t",у:"u",ф:"f",х:"h",ц:"ts",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya",
+  };
+  return (input || "").toLowerCase().trim()
+    .split("").map((c) => (/[a-z0-9\s-]/.test(c) ? c : (m[c] ?? ""))).join("")
+    .replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
 
 const ServiceDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const service = slug ? getServiceBySlug(slug) : undefined;
+  const { content } = useContent();
+
+  // 1) пробуем найти товар в админке по slug (auto или ручной)
+  const product = slug
+    ? content?.products?.find((p) => (p.slug || slugifyRu(p.name)) === slug)
+    : undefined;
+
+  // 2) базовые/статические данные из services.ts (для 6 известных slug-ов)
+  const baseService = slug ? getServiceBySlug(slug) : undefined;
+
+  // 3) собираем финальное
+  const service = product
+    ? {
+        slug: slug!,
+        h1: product.detail?.h1 || product.name || baseService?.h1 || "",
+        heroImage: product.detail?.heroImage || product.image || baseService?.heroImage || "",
+        description: product.detail?.description || product.description || baseService?.description || "",
+        materials: product.detail?.materials?.length ? product.detail.materials : (baseService?.materials || []),
+        steps: baseService?.steps || defaultSteps,
+        gallery: product.detail?.gallery || [],
+        subcategories: product.detail?.subcategories || [],
+        whereUsed: product.detail?.whereUsed || "",
+      }
+    : baseService ? { ...baseService, gallery: [] as string[], subcategories: [] as string[], whereUsed: "" } : undefined;
 
   if (!service) return <NotFound />;
 
@@ -68,6 +102,29 @@ const ServiceDetail = () => {
               </p>
             ))}
           </div>
+          {service.subcategories && service.subcategories.length > 0 && (
+            <div className="max-w-3xl mt-8 flex flex-wrap gap-2">
+              {service.subcategories.map((tag) => (
+                <span
+                  key={tag}
+                  className="px-3 py-1 rounded-full text-[12px]"
+                  style={{ background: "rgba(74,127,165,0.1)", color: "#4a7fa5", border: "1px solid rgba(74,127,165,0.2)" }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+          {service.whereUsed && (
+            <div className="max-w-3xl mt-8">
+              <span className="block text-[11px] uppercase tracking-[0.15em] mb-2" style={{ color: "#4a7fa5" }}>
+                Где применяется
+              </span>
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: "#8a95a5", margin: 0 }}>
+                {service.whereUsed}
+              </p>
+            </div>
+          )}
         </FadeIn>
       </section>
 
@@ -87,9 +144,9 @@ const ServiceDetail = () => {
           </h2>
         </FadeIn>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="flex flex-wrap gap-5 justify-start">
           {service.materials.map((mat, i) => (
-            <FadeIn key={i} delay={i * 0.08}>
+            <FadeIn key={i} delay={i * 0.08} className="flex-1 min-w-[280px] max-w-[380px]">
               <div
                 className="rounded-lg overflow-hidden h-full flex flex-col"
                 style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
@@ -100,7 +157,6 @@ const ServiceDetail = () => {
                       src={mat.photo}
                       alt={mat.name}
                       className="w-full h-full object-cover"
-                      style={{ filter: "brightness(0.6) saturate(0.5)" }}
                       loading="lazy"
                     />
                   </div>
@@ -154,42 +210,74 @@ const ServiceDetail = () => {
           </h2>
         </FadeIn>
 
-        <div className="flex flex-col md:flex-row gap-6 md:gap-0">
+        {/* Desktop — равные колонки */}
+        <div
+          className="hidden md:grid gap-6"
+          style={{ gridTemplateColumns: `repeat(${service.steps.length}, minmax(0, 1fr))` }}
+        >
           {service.steps.map((step, i) => (
             <FadeIn key={i} delay={i * 0.1}>
-              <div className="flex md:flex-1 items-start gap-4 md:gap-0 md:flex-col">
-                <div className="flex flex-col gap-1">
-                  <span style={{ fontSize: 11, color: "#4a7fa5", letterSpacing: "0.06em" }}>
-                    {step.num}
-                  </span>
-                  <span style={{ fontSize: 15, fontWeight: 500, color: "#c0cdd8" }}>
-                    {step.title}
-                  </span>
-                  <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, margin: 0, marginTop: 4 }}>
-                    {step.desc}
-                  </p>
-                </div>
+              <div className="relative flex flex-col gap-1 pr-6">
+                <span style={{ fontSize: 11, color: "#4a7fa5", letterSpacing: "0.06em" }}>{step.num}</span>
+                <span style={{ fontSize: 15, fontWeight: 500, color: "#c0cdd8" }}>{step.title}</span>
+                <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, margin: 0, marginTop: 4 }}>{step.desc}</p>
+                {i < service.steps.length - 1 && (
+                  <span className="absolute right-0 top-[30px]" style={{ fontSize: 16, color: "#2a3040" }}>→</span>
+                )}
               </div>
-              {/* Arrow between steps on desktop */}
+            </FadeIn>
+          ))}
+        </div>
+
+        {/* Mobile — вертикальный список */}
+        <div className="flex flex-col gap-6 md:hidden">
+          {service.steps.map((step, i) => (
+            <FadeIn key={i} delay={i * 0.1}>
+              <div className="flex flex-col gap-1">
+                <span style={{ fontSize: 11, color: "#4a7fa5", letterSpacing: "0.06em" }}>{step.num}</span>
+                <span style={{ fontSize: 15, fontWeight: 500, color: "#c0cdd8" }}>{step.title}</span>
+                <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, margin: 0, marginTop: 4 }}>{step.desc}</p>
+              </div>
               {i < service.steps.length - 1 && (
-                <span
-                  className="hidden md:inline-block self-center mx-6 mt-4"
-                  style={{ fontSize: 16, color: "#2a3040" }}
-                >
-                  →
-                </span>
-              )}
-              {/* Divider on mobile */}
-              {i < service.steps.length - 1 && (
-                <div
-                  className="md:hidden ml-1"
-                  style={{ width: 2, height: 16, background: "#2a3040", margin: "4px 0" }}
-                />
+                <div className="ml-1" style={{ width: 2, height: 16, background: "#2a3040", marginTop: 8 }} />
               )}
             </FadeIn>
           ))}
         </div>
       </section>
+
+      {/* Примеры работ */}
+      {service.gallery && service.gallery.length > 0 && (
+        <section className="px-5 md:px-[6vw] py-14 md:py-20">
+          <FadeIn>
+            <h2
+              className="mb-10 md:mb-14"
+              style={{ fontSize: "clamp(18px, 2vw, 28px)", fontWeight: 300, color: "#c0cdd8", letterSpacing: "0.02em" }}
+            >
+              Примеры работ
+            </h2>
+          </FadeIn>
+          <div className="flex flex-wrap gap-3 md:gap-4">
+            {service.gallery.map((url, i) => (
+              <FadeIn key={i} delay={i * 0.05} className="flex-1 min-w-[200px] max-w-[320px]">
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block overflow-hidden rounded-lg border border-white/10 hover:border-white/30 transition"
+                >
+                  <img
+                    src={url}
+                    alt={`Пример работы ${i + 1}`}
+                    loading="lazy"
+                    className="w-full aspect-[4/3] object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </a>
+              </FadeIn>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
       <section style={{ background: "#080a0d" }} className="px-5 md:px-[6vw] py-14 md:py-20">

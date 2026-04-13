@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useState, useRef } from "react";
-import { X, Phone, Send, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Phone, Send, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { CatalogService } from "@/data/servicesCatalog";
@@ -8,6 +9,7 @@ interface ServiceModalProps {
   service: CatalogService | null;
   open: boolean;
   onClose: () => void;
+  detailSlug?: string;
 }
 
 const ImageWithFallback = ({
@@ -113,7 +115,7 @@ const Lightbox = ({
   );
 };
 
-const ServiceModal = ({ service, open, onClose }: ServiceModalProps) => {
+const ServiceModal = ({ service, open, onClose, detailSlug }: ServiceModalProps) => {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const isMobile = useIsMobile();
   const touchStartY = useRef<number | null>(null);
@@ -469,6 +471,30 @@ const ServiceModal = ({ service, open, onClose }: ServiceModalProps) => {
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Подробнее — переход на отдельную страницу */}
+              {detailSlug && (
+                <div className="mt-6 text-center">
+                  <Link
+                    to={`/solutions/${detailSlug}`}
+                    onClick={onClose}
+                    className="inline-flex items-center justify-center gap-2 rounded-md transition-all"
+                    style={{
+                      border: "1px solid rgba(74,127,165,0.5)",
+                      color: "#c0cdd8",
+                      padding: "0 28px",
+                      height: isMobile ? 52 : 44,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      letterSpacing: "0.06em",
+                      background: "rgba(74,127,165,0.05)",
+                      width: isMobile ? "100%" : undefined,
+                    }}
+                  >
+                    Подробнее о решении <ArrowRight size={15} />
+                  </Link>
                 </div>
               )}
 

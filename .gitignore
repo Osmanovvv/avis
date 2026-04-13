@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Secrets / env
+.env
+.env.production
+api/.env.php
+
+# Uploaded user content
+api/uploads/*
+!api/uploads/.gitkeep
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

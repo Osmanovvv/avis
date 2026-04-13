@@ -1,7 +1,18 @@
 import FadeIn from "@/components/FadeIn";
 import { Phone, Send } from "lucide-react";
+import { useContent } from "@/hooks/use-content";
+import { useSettings } from "@/hooks/use-settings";
 
 const LeadCaptureForm = () => {
+  const { content } = useContent();
+  const { settings } = useSettings();
+  const phone = content?.contacts?.phone || settings?.phone || "";
+  const email = content?.contacts?.email || settings?.email || "";
+  const tgUsername = (content?.contacts?.telegram || settings?.telegram || "").replace(/^@/, "");
+  const telHref = phone ? `tel:${phone.replace(/[^+\d]/g, "")}` : "#";
+  const mailHref = email ? `mailto:${email}` : "#";
+  const tgHref = tgUsername ? `https://t.me/${tgUsername}` : "#";
+
   return (
     <section style={{ background: "#090b0e" }} className="py-14 px-5 md:py-20 md:px-[6vw]">
       {/* CTA block */}
@@ -27,7 +38,7 @@ const LeadCaptureForm = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-8">
             {/* Primary — Call */}
             <a
-              href="tel:+70000000000"
+              href={telHref}
               className="btn-gold w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-md h-[52px] px-9 text-[13px] font-semibold uppercase tracking-[0.08em] no-underline"
               style={{ whiteSpace: "nowrap" }}
             >
@@ -37,7 +48,7 @@ const LeadCaptureForm = () => {
 
             {/* Secondary — Telegram */}
             <a
-              href="https://t.me/username"
+              href={tgHref}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-md h-[52px] px-9 text-[13px] font-semibold uppercase tracking-[0.08em] transition-all duration-200 no-underline"
@@ -66,7 +77,7 @@ const LeadCaptureForm = () => {
           <p className="mt-5" style={{ fontSize: 12, color: "#4a5568", margin: 0, marginTop: 20 }}>
             или напишите на{" "}
             <a
-              href="mailto:info@example.com"
+              href={mailHref}
               className="no-underline transition-colors duration-200"
               style={{ color: "#4a7fa5" }}
             >

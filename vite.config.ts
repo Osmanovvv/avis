@@ -4,12 +4,19 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
-  base: "./",
+  base: "/",
   server: {
     host: "::",
     port: 8080,
     hmr: {
       overlay: false,
+    },
+    proxy: {
+      "/api": {
+        target: "http://localhost:8889",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
     },
   },
   build: {
@@ -17,11 +24,24 @@ export default defineConfig(({ mode }) => ({
     assetsDir: "assets",
     sourcemap: false,
     minify: "esbuild",
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         chunkFileNames: "assets/[name]-[hash].js",
         entryFileNames: "assets/[name]-[hash].js",
         assetFileNames: "assets/[name]-[hash].[ext]",
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-ui": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-tooltip",
+            "@radix-ui/react-tabs",
+            "@radix-ui/react-select",
+            "@radix-ui/react-accordion",
+          ],
+          "vendor-motion": ["framer-motion"],
+        },
       },
     },
   },

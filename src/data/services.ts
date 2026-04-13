@@ -1,18 +1,18 @@
-import concreteShelter from "@/assets/catalog/concrete-shelter.jpeg";
-import netsPerimeter from "@/assets/catalog/nets-perimeter.jpeg";
-import complexPerimeter from "@/assets/catalog/complex-perimeter.jpeg";
-import armoredDoors from "@/assets/catalog/armored-doors.jpeg";
-import windowProtection from "@/assets/catalog/window-protection.jpeg";
-import netsReservoirGroup from "@/assets/catalog/nets-reservoir-group.jpeg";
-import vaultDoor from "@/assets/catalog/vault-door.jpeg";
-import metalSupports from "@/assets/catalog/metal-supports.png";
-import shelterEntrance from "@/assets/catalog/shelter-entrance.jpeg";
-import netsHorizontal from "@/assets/catalog/nets-horizontal.jpeg";
-import netsTanks from "@/assets/catalog/nets-tanks.png";
-import netsFramework from "@/assets/catalog/nets-framework.jpeg";
-import complexBuilding from "@/assets/catalog/complex-building.jpeg";
-import netsCovering from "@/assets/catalog/nets-covering.jpeg";
-import modularShelter from "@/assets/catalog/modular-shelter.jpeg";
+import concreteShelter from "@/assets/catalog/concrete-shelter.webp";
+import netsPerimeter from "@/assets/catalog/nets-perimeter.webp";
+import complexPerimeter from "@/assets/catalog/complex-perimeter.webp";
+import armoredDoors from "@/assets/catalog/armored-doors.webp";
+import windowProtection from "@/assets/catalog/window-protection.webp";
+import netsReservoirGroup from "@/assets/catalog/nets-reservoir-group.webp";
+import vaultDoor from "@/assets/catalog/vault-door.webp";
+import metalSupports from "@/assets/catalog/metal-supports.webp";
+import shelterEntrance from "@/assets/catalog/shelter-entrance.webp";
+import netsHorizontal from "@/assets/catalog/nets-horizontal.webp";
+import netsTanks from "@/assets/catalog/nets-tanks.webp";
+import netsFramework from "@/assets/catalog/nets-framework.webp";
+import complexBuilding from "@/assets/catalog/complex-building.webp";
+import netsCovering from "@/assets/catalog/nets-covering.webp";
+import modularShelter from "@/assets/catalog/modular-shelter.webp";
 
 export interface Material {
   name: string;
@@ -181,5 +181,22 @@ export const services: ServiceData[] = [
   },
 ];
 
-export const getServiceBySlug = (slug: string): ServiceData | undefined =>
-  services.find((s) => s.slug === slug);
+export const getServiceBySlug = (
+  slug: string,
+  adminServices?: Array<Partial<ServiceData> & { slug: string }>,
+): ServiceData | undefined => {
+  const base = services.find((s) => s.slug === slug);
+  const override = adminServices?.find((s) => s.slug === slug);
+  if (!base && !override) return undefined;
+  if (!override) return base;
+  return {
+    slug,
+    h1: override.h1 || base?.h1 || "",
+    heroImage: override.heroImage || base?.heroImage || "",
+    description: override.description || base?.description || "",
+    materials: override.materials?.length ? override.materials : (base?.materials || []),
+    steps: base?.steps || defaultSteps,
+  };
+};
+
+export { defaultSteps };

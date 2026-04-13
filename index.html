@@ -4,19 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Preconnect to external resources -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-    <!-- Preload Inter font with font-display: swap -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" /></noscript>
+    <!-- Preload critical fonts (self-hosted, font-display: swap) -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-latin-wght-normal.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-cyrillic-wght-normal.woff2" crossorigin />
 
     <!-- Preload hero poster for LCP -->
-    <link rel="preload" as="image" href="/hero-poster.jpg" fetchpriority="high" />
+    <link rel="preload" as="image" href="/hero-poster.webp" fetchpriority="high" type="image/webp" />
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#0d0f12" />
     <title>Защита от БПЛА — сетки, ограждения, укрытия | АВИС</title>
     <meta name="description" content="Пассивная защита объектов от БПЛА: антидроновые сетки, бетонные ограждения, защитные шторы, убежища. Системы защиты от дронов под ключ. 200+ объектов.">
     <meta name="author" content="АВИС" />
@@ -25,10 +28,12 @@
     <meta property="og:type" content="website" />
     <meta property="og:title" content="АВИС — Защита объектов от БПЛА">
     <meta property="og:description" content="Антидроновые сетки, бетонные ограждения, защитные шторы. 200+ объектов. Монтаж под ключ.">
+    <meta property="og:image" content="/hero-poster.webp" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="АВИС — Защита объектов от БПЛА">
     <meta name="twitter:description" content="Антидроновые сетки, бетонные ограждения, защитные шторы. 200+ объектов. Монтаж под ключ.">
+    <meta name="twitter:image" content="/hero-poster.webp" />
   </head>
 
   <body>

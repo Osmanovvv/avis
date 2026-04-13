@@ -3,7 +3,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Phone, ArrowRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import logoAvis from "@/assets/logo-avis.png";
+import logoAvis from "@/assets/logo-avis.webp";
+import { useContent } from "@/hooks/use-content";
+import { useSettings } from "@/hooks/use-settings";
 
 const navItems = [
   { label: "Главная", path: "/" },
@@ -73,6 +75,10 @@ const Header = () => {
   }, [mobileOpen]);
 
   const counter = PAGE_COUNTER[location.pathname] || "";
+  const { content } = useContent();
+  const { settings } = useSettings();
+  const phone = content?.contacts?.phone || settings?.phone || "";
+  const telHref = phone ? `tel:${phone.replace(/[^+\d]/g, "")}` : "#";
 
   return (
     <>
@@ -99,15 +105,17 @@ const Header = () => {
           </nav>
 
           <div className="hidden lg:flex items-center gap-4 ml-auto">
-            <a
-              href="tel:+70000000000"
-              className="text-[12px] tracking-[0.06em] transition-colors duration-200"
-              style={{ color: "#7a8394" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#c0cdd8")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#7a8394")}
-            >
-              [ТЕЛЕФОН]
-            </a>
+            {phone && (
+              <a
+                href={telHref}
+                className="text-[12px] tracking-[0.06em] transition-colors duration-200"
+                style={{ color: "#7a8394" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#c0cdd8")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#7a8394")}
+              >
+                {phone}
+              </a>
+            )}
             <Link to="/contacts">
               <Button variant="cta" size="sm">Запросить аудит</Button>
             </Link>
@@ -194,14 +202,16 @@ const Header = () => {
                 transition={{ delay: 0.25, duration: 0.3 }}
                 className="mt-8 space-y-4"
               >
-                <a
-                  href="tel:+70000000000"
-                  className="flex items-center gap-2.5 text-[18px] font-medium tracking-wide"
-                  style={{ color: "#c0cdd8" }}
-                >
-                  <Phone className="h-[18px] w-[18px]" style={{ color: "#4a7fa5" }} />
-                  +7 (000) 000-00-00
-                </a>
+                {phone && (
+                  <a
+                    href={telHref}
+                    className="flex items-center gap-2.5 text-[18px] font-medium tracking-wide"
+                    style={{ color: "#c0cdd8" }}
+                  >
+                    <Phone className="h-[18px] w-[18px]" style={{ color: "#4a7fa5" }} />
+                    {phone}
+                  </a>
+                )}
                 <Link to="/contacts" onClick={() => setMobileOpen(false)}>
                   <button
                     className="btn-gold w-full flex items-center justify-center gap-2 font-bold text-[14px] uppercase tracking-[0.08em]"

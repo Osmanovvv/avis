@@ -6,20 +6,29 @@ import VideoSection from "@/components/VideoSection";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useCountUp, useStaggerReveal } from "@/hooks/use-animations";
 import SEO from "@/components/SEO";
+import { useContent } from "@/hooks/use-content";
+import { useSettings } from "@/hooks/use-settings";
 
-const trustStats = [
-  { value: "9+", label: "лет на рынке", num: 9 },
-  { value: "150+", label: "объектов", num: 150 },
-  { value: "СП 542", label: "проектирование", num: 0 },
-  { value: "3 года", label: "гарантия", num: 3 },
+const defaultTrustStats: Array<{ value: string; label: string }> = [
+  { value: "9+", label: "лет на рынке" },
+  { value: "150+", label: "объектов" },
+  { value: "СП 542", label: "проектирование" },
+  { value: "3 года", label: "гарантия" },
 ];
 
+function parseStatValue(value: string): { num: number; prefix: string; suffix: string } {
+  const match = value.match(/^([^\d]*)(\d+)(.*)$/);
+  if (!match) return { num: 0, prefix: "", suffix: "" };
+  return { num: parseInt(match[2], 10), prefix: match[1] || "", suffix: match[3] || "" };
+}
+
 /* ── Animated stat card ── */
-const StatCard = ({ stat }: { stat: typeof trustStats[0] }) => {
-  const isNumeric = stat.num > 0;
+const StatCard = ({ value, label }: { value: string; label: string }) => {
+  const { num, prefix, suffix } = parseStatValue(value);
+  const isNumeric = num > 0;
   const { count, ref } = useCountUp({
-    end: stat.num,
-    duration: stat.num > 100 ? 1500 : 1000,
+    end: num,
+    duration: num > 100 ? 1500 : 1000,
     enabled: isNumeric,
   });
 
@@ -43,17 +52,29 @@ const StatCard = ({ stat }: { stat: typeof trustStats[0] }) => {
           fontVariantNumeric: "tabular-nums",
         }}
       >
-        {isNumeric ? `${count}+` : stat.value}
+        {isNumeric ? `${prefix}${count}${suffix}` : value}
       </div>
       <div className="mt-2" style={{ fontSize: "0.75rem", color: "#7a8394" }}>
-        {stat.label}
+        {label}
       </div>
     </div>
   );
 };
 
 /* ── Hero — full-viewport, centered ── */
-const HeroSection = () => {
+const HeroSection = ({
+  heroData,
+  telHref,
+  tgHref,
+}: {
+  heroData?: { line1: string; subtitle: string; features?: string[]; line2?: string };
+  telHref: string;
+  tgHref: string;
+}) => {
+  const defaultFeatures = ["Собственное производство", "Монтаж\u00a0от\u00a05\u00a0дней", "Проектирование\u00a0по\u00a0СП\u00a0542"];
+  const features = (heroData?.features || []).filter(Boolean).length
+    ? heroData!.features!.map((f) => f || "")
+    : defaultFeatures;
   const gridRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
@@ -130,36 +151,34 @@ const HeroSection = () => {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              {isMobile ? (
-                <>ЗАЩИТА<br />ОБЪЕКТОВ<br />ОТ{"\u00a0"}БПЛА</>
-              ) : (
-                <>ЗАЩИТА ОБЪЕКТОВ{"\u00a0"}ОТ{"\u00a0"}БПЛА</>
-              )}
+              {heroData?.line1 || (isMobile ? <>ЗАЩИТА<br />ОБЪЕКТОВ<br />ОТ{"\u00a0"}БПЛА</> : <>ЗАЩИТА ОБЪЕКТОВ{"\u00a0"}ОТ{"\u00a0"}БПЛА</>)}
             </span>
           </h1>
         </FadeIn>
 
-        <FadeIn delay={0.1}>
-          <p
-            style={{
-              fontSize: isMobile ? "1rem" : "clamp(1.1rem, 2vw, 1.5rem)",
-              letterSpacing: isMobile ? "0.04em" : "0.12em",
-              fontWeight: 600,
-              color: "#4a7fa5",
-              marginTop: isMobile ? 8 : 16,
-            }}
-          >
-            СЕТКИ · ОГРАЖДЕНИЯ · УКРЫТИЯ
-          </p>
-        </FadeIn>
+        {heroData?.subtitle && (
+          <FadeIn delay={0.1}>
+            <p
+              style={{
+                fontSize: isMobile ? "1rem" : "clamp(1.1rem, 2vw, 1.5rem)",
+                letterSpacing: isMobile ? "0.04em" : "0.12em",
+                fontWeight: 600,
+                color: "#4a7fa5",
+                marginTop: isMobile ? 8 : 16,
+              }}
+            >
+              {heroData.subtitle}
+            </p>
+          </FadeIn>
+        )}
 
         <FadeIn delay={0.15}>
           <div
             className={`flex ${isMobile ? "flex-col gap-[10px]" : "flex-wrap justify-center gap-x-6 gap-y-2"}`}
             style={{ marginTop: isMobile ? 20 : 28 }}
           >
-            {["Собственное производство", "Монтаж\u00a0от\u00a05\u00a0дней", "Проектирование\u00a0по\u00a0СП\u00a0542"].map((text) => (
-              <div key={text} className="flex items-center gap-2">
+            {features.map((text, i) => text && (
+              <div key={i} className="flex items-center gap-2">
                 <CheckCircle2 size={isMobile ? 16 : 13} className="shrink-0" style={{ color: "#4a7fa5" }} />
                 <span style={{ fontSize: isMobile ? 14 : 13, color: "#7a8394" }}>{text}</span>
               </div>
@@ -173,7 +192,7 @@ const HeroSection = () => {
             style={{ marginTop: isMobile ? 28 : 44, width: isMobile ? "100%" : "auto" }}
           >
             <a
-              href="tel:+70000000000"
+              href={telHref}
               className="btn-gold inline-flex items-center justify-center gap-2.5 font-semibold relative overflow-hidden"
               style={{
                 width: isMobile ? "100%" : 260,
@@ -188,7 +207,7 @@ const HeroSection = () => {
               <ArrowRight size={15} />
             </a>
             <a
-              href="https://t.me/username"
+              href={tgHref}
               target="_blank"
               rel="noopener noreferrer"
               className="tg-btn inline-flex items-center justify-center gap-2.5 font-semibold transition-all duration-200"
@@ -286,7 +305,7 @@ const ClientRow = ({ name }: { name: string }) => (
 );
 
 /* ── Trust section ── */
-const TrustSection = () => {
+const TrustSection = ({ stats }: { stats: Array<{ value: string; label: string }> }) => {
   const { containerRef, revealed } = useStaggerReveal();
   const isMobile = useIsMobile();
   const [showAllClients, setShowAllClients] = useState(false);
@@ -307,16 +326,16 @@ const TrustSection = () => {
       >
         {/* ── Stats row ── */}
         <div ref={containerRef} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {trustStats.map((stat, i) => (
+          {stats.map((stat, i) => (
             <div
-              key={stat.label}
+              key={stat.label + i}
               style={{
                 opacity: revealed ? 1 : 0,
                 transform: revealed ? "translateY(0)" : "translateY(24px)",
                 transition: `opacity 0.5s cubic-bezier(0.25,0.46,0.45,0.94) ${i * (isMobile ? 40 : 80)}ms, transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94) ${i * (isMobile ? 40 : 80)}ms`,
               }}
             >
-              <StatCard stat={stat} />
+              <StatCard value={stat.value} label={stat.label} />
             </div>
           ))}
         </div>
@@ -448,6 +467,13 @@ const TrustSection = () => {
 };
 
 const Index = () => {
+  const { content } = useContent();
+  const { settings } = useSettings();
+  const phone = content?.contacts?.phone || settings?.phone || "";
+  const tgUsername = (content?.contacts?.telegram || settings?.telegram || "").replace(/^@/, "");
+  const telHref = phone ? `tel:${phone.replace(/[^+\d]/g, "")}` : "#";
+  const tgHref = tgUsername ? `https://t.me/${tgUsername}` : "#";
+
   return (
     <div>
       <SEO
@@ -458,10 +484,10 @@ const Index = () => {
         ogTitle="АВИС | Защита объектов от БПЛА"
         ogDescription="Антидроновые сетки, бетонные ограждения, защитные шторы. 150+ объектов. Монтаж под ключ."
       />
-      <HeroSection />
+      <HeroSection heroData={content?.hero} telHref={telHref} tgHref={tgHref} />
       <SolutionsCatalog />
       <VideoSection />
-      <TrustSection />
+      <TrustSection stats={content?.stats?.length && content.stats.some((s) => s.value) ? content.stats : defaultTrustStats} />
     </div>
   );
 };

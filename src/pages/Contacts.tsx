@@ -1,16 +1,68 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import FadeIn from "@/components/FadeIn";
 import { Phone, Send, Mail, MapPin } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
+import { useContent } from "@/hooks/use-content";
+import { useSettings } from "@/hooks/use-settings";
+import { api } from "@/lib/api";
+
+function formatPhone(d: string): string {
+  if (d.length === 0) return "+7 ";
+  let r = "+7 (";
+  r += d.slice(0, 3);
+  if (d.length >= 3) r += ") "; else return r;
+  r += d.slice(3, 6);
+  if (d.length >= 6) r += "-"; else return r;
+  r += d.slice(6, 8);
+  if (d.length >= 8) r += "-"; else return r;
+  r += d.slice(8, 10);
+  return r;
+}
 
 const Contacts = () => {
   const isMobile = useIsMobile();
+  const { content } = useContent();
+  const { settings } = useSettings();
+  const cPhone = content?.contacts?.phone || settings?.phone || "";
+  const cEmail = content?.contacts?.email || settings?.email || "";
+  const cAddress = content?.contacts?.address || settings?.address || "";
+  const cTgUsername = (content?.contacts?.telegram || settings?.telegram || "").replace(/^@/, "");
+  const cTelHref = cPhone ? `tel:${cPhone.replace(/[^+\d]/g, "")}` : "#";
+  const cTgHref = cTgUsername ? `https://t.me/${cTgUsername}` : "#";
+  const cMailHref = cEmail ? `mailto:${cEmail}` : "#";
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [digits, setDigits] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
+  const displayPhone = formatPhone(digits);
+
+  useLayoutEffect(() => {
+    const el = phoneInputRef.current;
+    if (el && el === document.activeElement) {
+      const len = displayPhone.length;
+      el.setSelectionRange(len, len);
+    }
+  }, [displayPhone]);
+
+  const handlePhoneKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      setDigits((prev) => prev.slice(0, -1));
+    } else if (/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+      setDigits((prev) => (prev.length < 10 ? prev + e.key : prev));
+    }
+  }, []);
+
+  const handlePhonePaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    let d = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (d.length >= 11 && (d[0] === "7" || d[0] === "8")) d = d.slice(1);
+    setDigits(d.slice(0, 10));
+  }, []);
   const formRef = useRef<HTMLFormElement>(null);
   const [showStickyBar, setShowStickyBar] = useState(true);
 
@@ -24,21 +76,29 @@ const Contacts = () => {
     return () => observer.disconnect();
   }, [isMobile]);
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
+  const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phone.trim()) {
-      toast.error("Укажите номер телефона");
+    if (digits.length !== 10) {
+      setSubmitError("Введите 10 цифр номера");
+      phoneInputRef.current?.focus();
       return;
     }
+    setSubmitError("");
     setSubmitting(true);
-    setTimeout(() => {
+    try {
+      await api.createLead(`+7${digits}`, name.trim(), "/contacts");
+      setSubmitted(true);
       toast.success("Заявка отправлена! Перезвоним в течение 2 часов.");
-      setPhone("");
-      setName("");
-      setMessage("");
+    } catch {
+      setSubmitError("Ошибка отправки. Попробуйте ещё раз или позвоните.");
+      toast.error("Ошибка отправки заявки");
+    } finally {
       setSubmitting(false);
-    }, 800);
-  }, [phone]);
+    }
+  }, [digits, name]);
 
   return (
     <div style={{ background: "#0d0f12", minHeight: "100vh", paddingBottom: isMobile ? 80 : 0 }}>
@@ -79,6 +139,25 @@ const Contacts = () => {
 
         {/* Contact Form */}
         <FadeIn delay={0.1}>
+          {submitted ? (
+            <div
+              ref={formRef as any}
+              className="mt-8 md:mt-12 rounded-xl text-center"
+              style={{
+                background: "rgba(74,127,165,0.08)",
+                border: "1px solid rgba(74,127,165,0.3)",
+                padding: isMobile ? "32px 20px" : "40px",
+                maxWidth: isMobile ? "100%" : 560,
+              }}
+            >
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: "#ffffff", margin: 0 }}>
+                Заявка отправлена
+              </h3>
+              <p style={{ fontSize: 14, color: "#c0cdd8", marginTop: 12 }}>
+                Перезвоним вам в течение 2 часов.
+              </p>
+            </div>
+          ) : (
           <form
             ref={formRef}
             onSubmit={handleSubmit}
@@ -119,10 +198,15 @@ const Contacts = () => {
               <div>
                 <label style={{ fontSize: "0.8125rem", color: "#7a8394", display: "block", marginBottom: 6 }}>Телефон</label>
                 <input
+                  ref={phoneInputRef}
                   type="tel"
-                  placeholder="+7 (___) ___-__-__"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  inputMode="tel"
+                  placeholder="+7 (900) 123-45-67"
+                  value={displayPhone}
+                  onChange={() => {}}
+                  onKeyDown={handlePhoneKeyDown}
+                  onPaste={handlePhonePaste}
+                  autoComplete="tel"
                   className="w-full rounded-md px-4"
                   style={{
                     height: 52,
@@ -153,6 +237,12 @@ const Contacts = () => {
               </div>
             </div>
 
+            {submitError && (
+              <p className="mt-3" style={{ fontSize: 13, color: "#e87171" }}>
+                {submitError}
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={submitting}
@@ -165,7 +255,15 @@ const Contacts = () => {
             >
               {submitting ? "Отправляем..." : "Отправить заявку"}
             </button>
+
+            <p className="mt-3 text-center" style={{ fontSize: 11, color: "#6b7280", lineHeight: 1.5 }}>
+              Нажимая кнопку, вы соглашаетесь с{" "}
+              <a href="/privacy" style={{ color: "#4a7fa5", textDecoration: "underline" }}>
+                политикой конфиденциальности
+              </a>
+            </p>
           </form>
+          )}
         </FadeIn>
 
         {/* Direct Contact Blocks */}
@@ -173,7 +271,7 @@ const Contacts = () => {
           {/* Phone */}
           <FadeIn delay={0.15}>
             <a
-              href="tel:+70000000000"
+              href={cTelHref}
               className="flex items-center gap-4 rounded-xl no-underline"
               style={{
                 padding: 20,
@@ -183,7 +281,7 @@ const Contacts = () => {
             >
               <Phone size={20} style={{ color: "#4a7fa5", flexShrink: 0 }} strokeWidth={1.5} />
               <div>
-                <span className="block" style={{ fontSize: "1.25rem", color: "#ffffff", fontWeight: 500 }}>[ТЕЛЕФОН]</span>
+                <span className="block" style={{ fontSize: "1.25rem", color: "#ffffff", fontWeight: 500 }}>{cPhone}</span>
                 <span className="block" style={{ fontSize: 12, color: "#7a8394" }}>Пн-Пт, 9:00-18:00</span>
               </div>
             </a>
@@ -192,7 +290,7 @@ const Contacts = () => {
           {/* Telegram */}
           <FadeIn delay={0.2}>
             <a
-              href="https://t.me/username"
+              href={cTgHref}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 rounded-xl no-underline transition-all hover:brightness-110"
@@ -212,7 +310,7 @@ const Contacts = () => {
           {/* Email */}
           <FadeIn delay={0.25}>
             <a
-              href="mailto:info@example.com"
+              href={cMailHref}
               className="flex items-center gap-4 rounded-xl no-underline"
               style={{
                 padding: 20,
@@ -222,7 +320,7 @@ const Contacts = () => {
             >
               <Mail size={20} style={{ color: "#4a7fa5", flexShrink: 0 }} strokeWidth={1.5} />
               <div>
-                <span className="block" style={{ fontSize: 15, color: "#c0cdd8" }}>[EMAIL]</span>
+                <span className="block" style={{ fontSize: 15, color: "#c0cdd8" }}>{cEmail}</span>
                 <span className="block" style={{ fontSize: 12, color: "#7a8394" }}>Для документов и расчётов</span>
               </div>
             </a>
@@ -242,7 +340,7 @@ const Contacts = () => {
           >
             <div className="text-center">
               <MapPin size={24} style={{ color: "#4a5568", margin: "0 auto 8px" }} />
-              <span style={{ fontSize: 13, color: "#4a5568" }}>[АДРЕС, карта будет добавлена]</span>
+              <span style={{ fontSize: 13, color: "#4a5568" }}>{cAddress || "Адрес будет указан"}</span>
             </div>
           </div>
         </FadeIn>
@@ -252,7 +350,7 @@ const Contacts = () => {
           <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-2">
               <MapPin size={14} style={{ color: "#4a5568", flexShrink: 0 }} />
-              <span style={{ fontSize: 13, color: "#4a5568" }}>[АДРЕС]</span>
+              <span style={{ fontSize: 13, color: "#4a5568" }}>{cAddress}</span>
             </div>
             <p className="sm:text-right" style={{ fontSize: 12, color: "#4a5568", maxWidth: 320, margin: 0 }}>
               Бесплатный аудит объекта · заполните запрос и мы отправим к{"\u00a0"}вам инженера
@@ -279,7 +377,7 @@ const Contacts = () => {
         >
           <div className="flex gap-[10px]">
             <a
-              href="tel:+70000000000"
+              href={cTelHref}
               className="btn-gold flex-1 flex items-center justify-center gap-2 rounded-lg font-semibold"
               style={{
                 height: 48,
@@ -289,7 +387,7 @@ const Contacts = () => {
               <Phone size={16} /> Позвонить
             </a>
             <a
-              href="https://t.me/username"
+              href={cTgHref}
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center gap-2 rounded-lg font-semibold transition-all"

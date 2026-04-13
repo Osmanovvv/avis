@@ -4,12 +4,12 @@ import { ArrowRight, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SEO from "@/components/SEO";
 
-import caseSubstation from "@/assets/case-energy-substation.jpg";
-import caseWarehouse from "@/assets/case-transport-warehouse.jpg";
-import caseFactory from "@/assets/case-industry-factory.jpg";
-import caseGov from "@/assets/case-gov-admin.jpg";
-import caseDatacenter from "@/assets/case-kii-datacenter.jpg";
-import caseOil from "@/assets/case-energy-oil.jpg";
+import caseSubstation from "@/assets/case-energy-substation.webp";
+import caseWarehouse from "@/assets/case-transport-warehouse.webp";
+import caseFactory from "@/assets/case-industry-factory.webp";
+import caseGov from "@/assets/case-gov-admin.webp";
+import caseDatacenter from "@/assets/case-kii-datacenter.webp";
+import caseOil from "@/assets/case-energy-oil.webp";
 
 interface Industry {
   id: string;

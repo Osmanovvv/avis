@@ -5,11 +5,56 @@ import ServiceModal from "@/components/ServiceModal";
 import { catalogServices, type CatalogService } from "@/data/servicesCatalog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useStaggerReveal } from "@/hooks/use-animations";
+import { useContent } from "@/hooks/use-content";
+
+function slugifyRu(input: string): string {
+  const m: Record<string, string> = {
+    а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"e",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",
+    с:"s",т:"t",у:"u",ф:"f",х:"h",ц:"ts",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya",
+  };
+  return (input || "").toLowerCase().trim()
+    .split("").map((c) => (/[a-z0-9\s-]/.test(c) ? c : (m[c] ?? ""))).join("")
+    .replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
+
+type CatalogServiceWithSlug = CatalogService & { slug: string };
 
 const SolutionsCatalog = () => {
-  const [selectedService, setSelectedService] = useState<CatalogService | null>(null);
+  const [selectedService, setSelectedService] = useState<CatalogServiceWithSlug | null>(null);
   const isMobile = useIsMobile();
   const { containerRef, revealed } = useStaggerReveal();
+  const { content } = useContent();
+
+  const adminProducts = content?.products?.filter((p) => p && (p.name?.trim() || p.image?.trim() || p.description?.trim())) || [];
+  const services: CatalogServiceWithSlug[] = adminProducts.length > 0
+    ? adminProducts.map((p, i) => {
+        const base = catalogServices[i];
+        const slug = p.slug || slugifyRu(p.name?.trim() || "") || `product-${i + 1}`;
+        const adminMats = p.detail?.materials?.length
+          ? p.detail.materials.map((m) => ({
+              name: m.name,
+              specs: (m.specs || "").split("\n").map((s) => s.trim()).filter(Boolean),
+              image: m.photo || "",
+              badge: m.badge,
+            }))
+          : null;
+        const adminDesc = p.detail?.description?.trim();
+        return {
+          id: base?.id ?? `custom-${i}`,
+          number: base?.number ?? String(i + 1).padStart(2, "0"),
+          title: p.detail?.h1?.trim() || p.name?.trim() || base?.title || "",
+          shortDesc: p.description?.trim() || base?.shortDesc || "",
+          cardImage: p.image?.trim() || base?.cardImage || "",
+          heroImage: p.detail?.heroImage?.trim() || base?.heroImage || (p.image?.trim() || ""),
+          description: adminDesc ? [adminDesc] : (base?.description ?? [p.description?.trim() || ""]),
+          subcategories: (p.detail?.subcategories && p.detail.subcategories.length > 0) ? p.detail.subcategories : (base?.subcategories ?? []),
+          materials: adminMats ?? base?.materials ?? [],
+          whereUsed: p.detail?.whereUsed?.trim() || base?.whereUsed || "",
+          gallery: (p.detail?.gallery && p.detail.gallery.length > 0) ? p.detail.gallery : (base?.gallery ?? []),
+          slug,
+        };
+      })
+    : catalogServices.map((s, i) => ({ ...s, slug: ["shelters","nets","barriers","rolletes","curtains","complex"][i] || `item-${i+1}` }));
 
   return (
     <>
@@ -25,7 +70,7 @@ const SolutionsCatalog = () => {
           </FadeIn>
 
           <div ref={containerRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-            {catalogServices.map((service, i) => (
+            {services.map((service, i) => (
               <div
                 key={service.id}
                 className="catalog-card-wrapper"
@@ -82,6 +127,7 @@ const SolutionsCatalog = () => {
         service={selectedService}
         open={!!selectedService}
         onClose={() => setSelectedService(null)}
+        detailSlug={selectedService?.slug}
       />
 
       <style>{`

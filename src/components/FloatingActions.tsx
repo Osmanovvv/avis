@@ -1,15 +1,17 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { Phone, X, MessageSquare, PhoneCall } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useContent } from "@/hooks/use-content";
+import { useSettings } from "@/hooks/use-settings";
+import { api } from "@/lib/api";
 
-function formatPhone(digits: string): string {
-  const d = digits.slice(0, 10);
-  let r = "+7";
-  if (!d.length) return r;
-  r += " (" + d.slice(0, 3);
+function formatPhone(d: string): string {
+  if (d.length === 0) return "+7 ";
+  let r = "+7 (";
+  r += d.slice(0, 3);
   if (d.length >= 3) r += ") "; else return r;
   r += d.slice(3, 6);
   if (d.length >= 6) r += "-"; else return r;
@@ -23,14 +25,30 @@ const QuickFormModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (
   const [digits, setDigits] = useState("");
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
-
   const [loading, setLoading] = useState(false);
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const displayPhone = formatPhone(digits);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useLayoutEffect(() => {
+    const el = phoneRef.current;
+    if (el && el === document.activeElement) {
+      const len = displayPhone.length;
+      el.setSelectionRange(len, len);
+    }
+  }, [displayPhone]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (digits.length !== 10) { setError("Введите 10 цифр номера"); return; }
     setLoading(true);
-    setTimeout(() => { setLoading(false); setDone(true); }, 1200);
+    try {
+      await api.createLead(`+7${digits}`, "", "popup");
+      setDone(true);
+    } catch {
+      setError("Ошибка отправки. Попробуйте ещё раз.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClose = (v: boolean) => {
@@ -55,15 +73,29 @@ const QuickFormModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (
             <div className="relative">
               <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
+                ref={phoneRef}
                 type="tel"
-                inputMode="numeric"
+                inputMode="tel"
                 placeholder="+7 (900) 123-45-67"
                 aria-label="Телефон"
-                value={digits.length > 0 ? formatPhone(digits) : ""}
-                onChange={(e) => {
-                  let raw = e.target.value.replace(/\D/g, "");
-                  if (raw.startsWith("7") || raw.startsWith("8")) raw = raw.slice(1);
-                  setDigits(raw.slice(0, 10));
+                value={displayPhone}
+                onChange={() => {}}
+                onKeyDown={(e) => {
+                  if (e.key === "Backspace") {
+                    e.preventDefault();
+                    setDigits((prev) => prev.slice(0, -1));
+                    if (error) setError("");
+                  } else if (/^[0-9]$/.test(e.key)) {
+                    e.preventDefault();
+                    setDigits((prev) => (prev.length < 10 ? prev + e.key : prev));
+                    if (error) setError("");
+                  }
+                }}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  let d = e.clipboardData.getData("text").replace(/\D/g, "");
+                  if (d.length >= 11 && (d[0] === "7" || d[0] === "8")) d = d.slice(1);
+                  setDigits(d.slice(0, 10));
                   if (error) setError("");
                 }}
                 autoComplete="tel"
@@ -94,6 +126,12 @@ const QuickFormModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (
                 <>Перезвоните мне <ArrowRight className="h-4 w-4" /></>
               )}
             </button>
+            <p className="text-[11px] text-center" style={{ color: "#6b7280", lineHeight: 1.5 }}>
+              Нажимая кнопку, вы соглашаетесь с{" "}
+              <a href="/privacy" style={{ color: "#4a7fa5", textDecoration: "underline" }}>
+                политикой конфиденциальности
+              </a>
+            </p>
           </form>
         )}
       </DialogContent>
@@ -106,6 +144,12 @@ const FloatingActions = () => {
   const [nearFooter, setNearFooter] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [scrolledPast, setScrolledPast] = useState(false);
+  const { content } = useContent();
+  const { settings } = useSettings();
+  const phone = content?.contacts?.phone || settings?.phone || "";
+  const tgUsername = (content?.contacts?.telegram || settings?.telegram || "").replace(/^@/, "");
+  const telHref = phone ? `tel:${phone.replace(/[^+\d]/g, "")}` : "#";
+  const tgHref = tgUsername ? `https://t.me/${tgUsername}` : "#";
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 3000);
@@ -150,7 +194,7 @@ const FloatingActions = () => {
       >
         <div className="flex items-center gap-[10px]">
           <a
-            href="tel:+70000000000"
+            href={telHref}
             className="flex-1 h-[46px] rounded-[10px] font-bold text-[14px] flex items-center justify-center gap-2 transition-all hover:brightness-110"
             style={{ background: "#d4a017", color: "#000" }}
           >
@@ -158,7 +202,7 @@ const FloatingActions = () => {
             Позвонить
           </a>
           <a
-            href="https://t.me/username"
+            href={tgHref}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 h-[46px] rounded-[10px] text-[14px] flex items-center justify-center gap-2 transition-all"

@@ -5,12 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, TrendingUp, MapPin, Calendar } from "lucide-react";
 import SEO from "@/components/SEO";
 
-import caseSubstation from "@/assets/case-energy-substation.jpg";
-import caseOil from "@/assets/case-energy-oil.jpg";
-import caseWarehouse from "@/assets/case-transport-warehouse.jpg";
-import caseDatacenter from "@/assets/case-kii-datacenter.jpg";
-import caseFactory from "@/assets/case-industry-factory.jpg";
-import caseGov from "@/assets/case-gov-admin.jpg";
+import caseSubstation from "@/assets/case-energy-substation.webp";
+import caseOil from "@/assets/case-energy-oil.webp";
+import caseWarehouse from "@/assets/case-transport-warehouse.webp";
+import caseDatacenter from "@/assets/case-kii-datacenter.webp";
+import caseFactory from "@/assets/case-industry-factory.webp";
+import caseGov from "@/assets/case-gov-admin.webp";
 
 type Sector = "all" | "energy" | "transport" | "industry" | "government" | "kii";
 

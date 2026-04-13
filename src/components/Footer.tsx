@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, Send } from "lucide-react";
+import { Phone, Mail, MapPin, Send, MessageCircle } from "lucide-react";
+import { useContent } from "@/hooks/use-content";
+import { useSettings } from "@/hooks/use-settings";
 
 const navLinks = [
   { label: "Главная", path: "/" },
@@ -10,27 +12,36 @@ const navLinks = [
   { label: "Проекты", path: "/cases" },
 ];
 
-const contacts = [
-  { icon: Phone, text: "[ТЕЛЕФОН]", href: "tel:+70000000000", highlight: false, isPhone: true },
-  { icon: Mail, text: "[EMAIL]", href: "mailto:info@example.com", highlight: false, isPhone: false },
-  { icon: MapPin, text: "[АДРЕС]", href: undefined, highlight: false, isPhone: false },
-  { icon: Send, text: "@[TELEGRAM]", href: "https://t.me/username", highlight: true, isPhone: false },
-];
-
 const Footer = () => {
+  const { content } = useContent();
+  const { settings } = useSettings();
+
+  const phone = content?.contacts?.phone || settings?.phone || "";
+  const email = content?.contacts?.email || settings?.email || "";
+  const address = content?.contacts?.address || settings?.address || "";
+  const tgUsernameRaw = content?.contacts?.telegram || settings?.telegram || "";
+  const tgUsername = tgUsernameRaw.replace(/^@/, "");
+  const companyName = settings?.companyName || "";
+  const inn = settings?.inn || "";
+
+  const telHref = phone ? `tel:${phone.replace(/[^+\d]/g, "")}` : "";
+  const tgHref = tgUsername ? `https://t.me/${tgUsername}` : "";
+  const waHref = "https://wa.me/79882330056";
+
+  type ContactItem = { icon: any; text: string; href?: string; highlight?: boolean; isPhone?: boolean; target?: string };
+  const contacts: ContactItem[] = [];
+  if (phone) contacts.push({ icon: Phone, text: phone, href: telHref, isPhone: true });
+  if (email) contacts.push({ icon: Mail, text: email, href: `mailto:${email}` });
+  if (address) contacts.push({ icon: MapPin, text: address });
+  if (tgUsername) contacts.push({ icon: Send, text: `@${tgUsername}`, href: tgHref, highlight: true, target: "_blank" });
+  contacts.push({ icon: MessageCircle, text: "WhatsApp", href: waHref, highlight: true, target: "_blank" });
+
   return (
     <footer style={{ background: "#080a0d", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
       <div className="px-5 pt-9 pb-6 md:px-[6vw] md:pt-12 md:pb-8">
-        {/* Columns */}
         <div className="grid grid-cols-1 md:grid-cols-[30%_30%_40%] gap-10 md:gap-6">
-          {/* Brand */}
           <div className="order-1">
-            <span
-              className="block text-[16px] font-light uppercase"
-              style={{ letterSpacing: "0.22em", color: "#e8eaf0" }}
-            >
-              АВИС
-            </span>
+            <img src="/logo-avis-header.webp" alt="АВИС" width={40} height={40} className="h-[40px] w-auto object-contain" />
             <p className="mt-2 max-w-[200px]" style={{ fontSize: 13, color: "#4a5568" }}>
               Инженерная защита объектов от БПЛА
             </p>
@@ -39,16 +50,10 @@ const Footer = () => {
             </p>
           </div>
 
-          {/* Contacts — before nav on mobile */}
           <div className="order-2 md:order-3">
-            <h4
-              className="mb-4 uppercase"
-              style={{ fontSize: 10, letterSpacing: "0.12em", color: "#374151" }}
-            >
-              Контакты
-            </h4>
+            <h4 className="mb-4 uppercase" style={{ fontSize: 10, letterSpacing: "0.12em", color: "#374151" }}>Контакты</h4>
             <ul className="space-y-2">
-              {contacts.map((c) => {
+              {contacts.map((c, idx) => {
                 const inner = (
                   <span className="flex items-center gap-2">
                     <c.icon size={13} className="flex-shrink-0" style={{ color: c.highlight ? "#4a7fa5" : "#4a5568" }} />
@@ -58,12 +63,12 @@ const Footer = () => {
                   </span>
                 );
                 return (
-                  <li key={c.text}>
+                  <li key={idx}>
                     {c.href ? (
                       <a
                         href={c.href}
-                        target={c.href.startsWith("http") ? "_blank" : undefined}
-                        rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                        target={c.target}
+                        rel={c.target === "_blank" ? "noopener noreferrer" : undefined}
                         className="transition-colors duration-200 hover:[&_span]:text-[#c0cdd8]"
                       >
                         {inner}
@@ -77,14 +82,8 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Navigation */}
           <div className="order-3 md:order-2">
-            <h4
-              className="mb-4 uppercase"
-              style={{ fontSize: 10, letterSpacing: "0.12em", color: "#374151" }}
-            >
-              Навигация
-            </h4>
+            <h4 className="mb-4 uppercase" style={{ fontSize: 10, letterSpacing: "0.12em", color: "#374151" }}>Навигация</h4>
             <ul className="space-y-2">
               {navLinks.map((item) => (
                 <li key={item.path}>
@@ -103,17 +102,14 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div
           className="mt-10 pt-5 flex flex-col items-center gap-3 md:flex-row md:justify-between md:items-center"
           style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
         >
           <span style={{ fontSize: 11, color: "#374151" }}>
-            [ПОЛНОЕ ЮРИДИЧЕСКОЕ НАЗВАНИЕ] · ИНН: [ИНН]
+            {companyName && `${companyName}`}{companyName && inn && ` · `}{inn && `ИНН: ${inn}`}
           </span>
-          <span style={{ fontSize: 11, color: "#374151" }}>
-            © 2026 АВИС. Все права защищены.
-          </span>
+          <span style={{ fontSize: 11, color: "#374151" }}>© 2026 АВИС. Все права защищены.</span>
           <Link
             to="/privacy"
             className="transition-colors duration-200"

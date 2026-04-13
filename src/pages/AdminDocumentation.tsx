@@ -18,7 +18,6 @@ const DOC_SECTIONS = [
 - **UI Kit**: shadcn/ui (default style, HSL CSS variables)
 - **Animations**: framer-motion 12
 - **Routing**: react-router-dom 6 (BrowserRouter)
-- **State / Fetching**: @tanstack/react-query 5
 - **Forms**: react-hook-form + zod + @hookform/resolvers
 - **Icons**: lucide-react 0.462
 - **Toasts**: sonner + radix toast
@@ -61,8 +60,8 @@ const DOC_SECTIONS = [
 | \`--muted-foreground\` | 220 14% 53% | #7a8394 — приглушённый текст |
 | \`--accent\` | 205 30% 72% | #c0cdd8 — brushed steel |
 | \`--highlight\` | 207 36% 47% | #4a7fa5 — cold blue steel |
-| \`--gold\` | 30 90% 45% | #D9760A — тёплый оранжевый |
-| \`--gold-light\` | 34 90% 52% | #E89A14 — светлый оранжевый |
+| \`--gold\` | 43 85% 40% | #b8860b — тёмное золото |
+| \`--gold-light\` | 45 78% 46% | #d4a017 — светлое золото |
 | \`--steel\` | 220 14% 53% | стальной серый |
 | \`--steel-light\` | 205 30% 72% | светлый стальной |
 | \`--navy\` | 220 18% 5% | тёмный navy |

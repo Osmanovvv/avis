@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import FadeIn from "@/components/FadeIn";
+import { useContent } from "@/hooks/use-content";
 
 interface VideoItem {
   id: string;
@@ -156,6 +157,20 @@ const VideoPlayer = ({ video }: { video: VideoItem }) => {
 };
 
 const VideoSection = () => {
+  const { content } = useContent();
+  const slots = content?.videoSlots;
+  const effectiveVideos: VideoItem[] = [
+    {
+      ...videos[0],
+      src: slots?.video01_mp4?.trim() || videos[0].src,
+      poster: slots?.video01_poster?.trim() || videos[0].poster,
+    },
+    {
+      ...videos[1],
+      src: slots?.video02_mp4?.trim() || videos[1].src,
+      poster: slots?.video02_poster?.trim() || videos[1].poster,
+    },
+  ];
   const isMobile = useIsMobile();
 
   return (
@@ -190,7 +205,7 @@ const VideoSection = () => {
 
         <FadeIn delay={0.1}>
           <div className={`grid gap-5 ${isMobile ? "grid-cols-1" : "grid-cols-2"}`}>
-            {videos.map((video) => (
+            {effectiveVideos.map((video) => (
               <VideoPlayer key={video.id} video={video} />
             ))}
           </div>

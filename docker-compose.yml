@@ -1,0 +1,39 @@
+services:
+  db:
+    image: mysql:8.0
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --init-connect='SET NAMES utf8mb4'
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: avis
+    ports:
+      - "3311:3306"
+    volumes:
+      - ./api/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 10
+
+  api:
+    image: php:8.2-apache
+    ports:
+      - "8889:80"
+    volumes:
+      - ./api:/var/www/html
+      - ./api/uploads.ini:/usr/local/etc/php/conf.d/zz-uploads.ini:ro
+    environment:
+      DB_HOST: db
+      DB_NAME: avis
+      DB_USER: root
+      DB_PASS: root
+      ADMIN_PASSWORD: admin
+      JWT_SECRET: avis_dev_secret
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      bash -c "docker-php-ext-install pdo pdo_mysql && a2enmod rewrite && sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf && apache2-foreground"
+
+volumes:
+  mysql_data:

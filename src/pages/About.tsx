@@ -4,7 +4,10 @@ import FadeIn from "@/components/FadeIn";
 import { ArrowRight, CheckCircle2, Phone, Shield, Wrench, Clock, Award } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import SEO from "@/components/SEO";
-import logoAvis from "@/assets/logo-avis.png";
+import logoAvis from "@/assets/logo-avis.webp";
+import { useContent } from "@/hooks/use-content";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 function formatPhone(digits: string): string {
   const d = digits.slice(0, 10);
@@ -59,6 +62,10 @@ const About = () => {
   const [submitted, setSubmitted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
+  const { content } = useContent();
+  const aboutDescription = content?.about?.description?.trim() || "";
+  const aboutAdvantages = (content?.about?.advantages || []).map((a) => a?.trim()).filter(Boolean);
+  const displayBullets = aboutAdvantages.length > 0 ? aboutAdvantages : bullets;
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const d = extractDigits(e.target.value);
@@ -66,14 +73,26 @@ const About = () => {
     if (error) setError("");
   }, [error]);
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (digits.length !== 10) {
       setError("Введите 10 цифр номера");
       inputRef.current?.focus();
       return;
     }
-    setSubmitted(true);
+    setError("");
+    setSubmitting(true);
+    try {
+      await api.createLead(`+7${digits}`, "", "/about");
+      setSubmitted(true);
+      toast.success("Заявка отправлена! Перезвоним в течение 2 часов.");
+    } catch {
+      setError("Ошибка отправки. Попробуйте ещё раз или позвоните.");
+      toast.error("Ошибка отправки заявки");
+    } finally {
+      setSubmitting(false);
+    }
   }, [digits]);
 
   const displayValue = digits.length > 0 ? formatPhone(digits) : "";
@@ -125,12 +144,14 @@ const About = () => {
               >
                 Инженерная защита объектов{"\u00a0"}от{"\u00a0"}БПЛА
               </p>
-              <p
-                className="mt-4 mx-auto max-w-[600px] italic"
-                style={{ fontSize: 15, color: "#6b7280", lineHeight: 1.7 }}
-              >
-                [Краткое описание компании, предоставит клиент]
-              </p>
+              {aboutDescription && (
+                <p
+                  className="mt-4 mx-auto max-w-[600px]"
+                  style={{ fontSize: 15, color: "#6b7280", lineHeight: 1.7, whiteSpace: "pre-line" }}
+                >
+                  {aboutDescription}
+                </p>
+              )}
             </div>
           </FadeIn>
         </div>
@@ -204,7 +225,7 @@ const About = () => {
             </FadeIn>
             <FadeIn delay={0.1}>
               <ul className="space-y-2">
-                {bullets.map((b) => (
+                {displayBullets.map((b) => (
                   <li
                     key={b}
                     className="text-[15px] leading-[1.9]"
@@ -308,20 +329,32 @@ const About = () => {
             </h3>
           </FadeIn>
           <FadeIn delay={0.08}>
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-4 max-w-[720px] mx-auto">
-              {Array.from({ length: 5 }).map((_, i) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 max-w-[900px] mx-auto">
+              {[
+                'ОАО «ИНТЕР РАО – Электрогенерация»',
+                'Межрайонная ИФНС №\u00a07 по Краснодарскому краю',
+                'ФГБУ «Объединённый санаторий «Сочи»',
+                'ГБУ КК «Дворец спорта Большой»',
+                'ООО «КВАРЦ Групп»',
+                'АО «МОРЕМОЛЛ»',
+                'НАО «Центр Омега»',
+                'ОАО «Отель «Звёздный»',
+                'ПАО «ОГК-2»',
+                'АО «Галерея Краснодар»',
+                'МУП «Водоканал» города Сочи',
+                'ФГУП «Росморпорт»',
+                'ПАО «Калужский турбинный завод»',
+                'АО «Силовые машины»',
+                'ООО «Группа Компаний „Rusagro"»',
+                'УПРО «Объединённый санаторий „Русь"»',
+              ].map((name) => (
                 <div
-                  key={i}
-                  className="flex items-center justify-center"
-                  style={{
-                    width: "100%",
-                    height: 40,
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px dashed rgba(255,255,255,0.1)",
-                    borderRadius: 4,
-                  }}
+                  key={name}
+                  className="flex items-center gap-3 transition-colors duration-200 hover:bg-[rgba(74,127,165,0.05)]"
+                  style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
                 >
-                  <span className="text-[9px] uppercase tracking-[0.1em]" style={{ color: "#374151" }}>ПАРТНЁР</span>
+                  <span className="flex-shrink-0 rounded-full" style={{ width: 4, height: 4, background: "#4a7fa5" }} />
+                  <span style={{ fontSize: 13, color: "#c0cdd8", lineHeight: 1.4 }}>{name}</span>
                 </div>
               ))}
             </div>
@@ -395,17 +428,24 @@ const About = () => {
 
                   <button
                     type="submit"
-                    className="btn-gold w-full rounded-md font-semibold text-[14px] uppercase tracking-[0.08em] flex items-center justify-center gap-2"
+                    disabled={submitting}
+                    className="btn-gold w-full rounded-md font-semibold text-[14px] uppercase tracking-[0.08em] flex items-center justify-center gap-2 disabled:opacity-60"
                     style={{
                       height: 56,
                     }}
                   >
-                    Получить бесплатный аудит
-                    <ArrowRight className="h-5 w-5" />
+                    {submitting ? "Отправка..." : "Получить бесплатный аудит"}
+                    {!submitting && <ArrowRight className="h-5 w-5" />}
                   </button>
 
                   <p className="text-center text-[12px] pt-1" style={{ color: "#4a5568" }}>
                     Ответим в течение 2 часов · Без спама
+                  </p>
+                  <p className="text-center text-[11px]" style={{ color: "#4a5568" }}>
+                    Нажимая кнопку, вы соглашаетесь с{" "}
+                    <a href="/privacy" style={{ color: "#4a7fa5", textDecoration: "underline" }}>
+                      политикой конфиденциальности
+                    </a>
                   </p>
                 </form>
               </FadeIn>

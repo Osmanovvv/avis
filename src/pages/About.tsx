@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import SEO from "@/components/SEO";
 import logoAvis from "@/assets/logo-avis.webp";
 import { useContent } from "@/hooks/use-content";
+import { useSettings } from "@/hooks/use-settings";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -63,6 +64,11 @@ const About = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
   const { content } = useContent();
+  const { settings } = useSettings();
+  const companyName = settings?.companyName || "ООО «АВИС»";
+  const inn = settings?.inn || "";
+  const ogrn = settings?.ogrn || "";
+  const legalAddress = content?.contacts?.address || settings?.address || "";
   const aboutDescription = content?.about?.description?.trim() || "";
   const aboutAdvantages = (content?.about?.advantages || []).map((a) => a?.trim()).filter(Boolean);
   const displayBullets = aboutAdvantages.length > 0 ? aboutAdvantages : bullets;
@@ -475,8 +481,12 @@ const About = () => {
       <section style={{ background: "rgba(255,255,255,0.02)" }}>
         <div className="container py-6">
           <div className="text-center text-[12px] leading-[1.8]" style={{ color: "#374151" }}>
-            <p>[Полное юридическое название] · ИНН: [________] · ОГРН: [________]</p>
-            <p>[Юридический адрес]</p>
+            <p>
+              {companyName}
+              {inn && <> · ИНН: {inn}</>}
+              {ogrn && <> · ОГРН: {ogrn}</>}
+            </p>
+            {legalAddress && <p>{legalAddress}</p>}
           </div>
         </div>
       </section>

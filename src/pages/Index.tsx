@@ -101,11 +101,12 @@ const HeroSection = ({
           autoPlay muted loop playsInline
           webkit-playsinline=""
           x5-playsinline=""
-          poster="/images/nets-main.jpg"
+          poster="/hero-poster.webp"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ filter: isMobile ? "brightness(0.3) saturate(0.35)" : "brightness(0.32) saturate(0.35)" }}
-          preload="auto"
+          preload="none"
         >
+          <source src="/hero-video.webm" type="video/webm" />
           <source src="/hero-video.mp4" type="video/mp4" />
         </video>
         <div

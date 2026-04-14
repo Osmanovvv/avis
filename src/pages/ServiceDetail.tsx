@@ -19,6 +19,10 @@ function slugifyRu(input: string): string {
 const ServiceDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { content } = useContent();
+  const cPhone = content?.contacts?.phone || "";
+  const cTelHref = cPhone ? `tel:${cPhone.replace(/[^+\d]/g, "")}` : "#";
+  const cTgUser = (content?.contacts?.telegram || "").replace(/^@/, "");
+  const cTgHref = cTgUser ? `https://t.me/${cTgUser}` : "#";
 
   // 1) пробуем найти товар в админке по slug (auto или ручной)
   const product = slug
@@ -300,7 +304,7 @@ const ServiceDetail = () => {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-8">
               <a
-                href="tel:+70000000000"
+                href={cTelHref}
                 className="btn-gold inline-flex items-center justify-center gap-2 w-full sm:w-auto rounded-md"
                 style={{
                   padding: "0 36px",
@@ -314,7 +318,7 @@ const ServiceDetail = () => {
                 <Phone size={16} /> ПОЗВОНИТЬ
               </a>
               <a
-                href="https://t.me/username"
+                href={cTgHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 w-full sm:w-auto rounded-md transition-all duration-200"

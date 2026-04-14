@@ -3,6 +3,7 @@ import { X, Phone, Send, ChevronLeft, ChevronRight, ArrowRight } from "lucide-re
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useContent } from "@/hooks/use-content";
 import type { CatalogService } from "@/data/servicesCatalog";
 
 interface ServiceModalProps {
@@ -116,6 +117,11 @@ const Lightbox = ({
 };
 
 const ServiceModal = ({ service, open, onClose, detailSlug }: ServiceModalProps) => {
+  const { content } = useContent();
+  const phone = content?.contacts?.phone || "";
+  const telHref = phone ? `tel:${phone.replace(/[^+\d]/g, "")}` : "#";
+  const tgUser = (content?.contacts?.telegram || "").replace(/^@/, "");
+  const tgHref = tgUser ? `https://t.me/${tgUser}` : "#";
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const isMobile = useIsMobile();
   const touchStartY = useRef<number | null>(null);
@@ -515,7 +521,7 @@ const ServiceModal = ({ service, open, onClose, detailSlug }: ServiceModalProps)
                 </div>
                 <div className={`flex gap-${isMobile ? "[10px]" : "3"} justify-center ${isMobile ? "flex-col" : "flex-row"}`}>
                   <a
-                    href="tel:+70000000000"
+                    href={telHref}
                     className="btn-gold inline-flex items-center justify-center gap-2 rounded-md"
                     style={{
                       padding: "0 28px",
@@ -529,7 +535,7 @@ const ServiceModal = ({ service, open, onClose, detailSlug }: ServiceModalProps)
                     <Phone size={15} /> Позвонить
                   </a>
                   <a
-                    href="https://t.me/username"
+                    href={tgHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 rounded-md transition-all"

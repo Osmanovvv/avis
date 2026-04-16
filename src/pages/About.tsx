@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useLayoutEffect } from "react";
 import { Link } from "react-router-dom";
 import FadeIn from "@/components/FadeIn";
 import { ArrowRight, CheckCircle2, Phone, Shield, Wrench, Clock, Award } from "lucide-react";
@@ -73,9 +73,33 @@ const About = () => {
   const aboutAdvantages = (content?.about?.advantages || []).map((a) => a?.trim()).filter(Boolean);
   const displayBullets = aboutAdvantages.length > 0 ? aboutAdvantages : bullets;
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const d = extractDigits(e.target.value);
-    setDigits(d);
+  const displayPhone = formatPhone(digits);
+
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (el && el === document.activeElement) {
+      const len = displayPhone.length;
+      el.setSelectionRange(len, len);
+    }
+  }, [displayPhone]);
+
+  const handlePhoneKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      setDigits((prev) => prev.slice(0, -1));
+      if (error) setError("");
+    } else if (/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+      setDigits((prev) => (prev.length < 10 ? prev + e.key : prev));
+      if (error) setError("");
+    }
+  }, [error]);
+
+  const handlePhonePaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    let d = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (d.length >= 11 && (d[0] === "7" || d[0] === "8")) d = d.slice(1);
+    setDigits(d.slice(0, 10));
     if (error) setError("");
   }, [error]);
 
@@ -101,7 +125,6 @@ const About = () => {
     }
   }, [digits]);
 
-  const displayValue = digits.length > 0 ? formatPhone(digits) : "";
   const isComplete = digits.length === 10;
 
   return (
@@ -405,8 +428,10 @@ const About = () => {
                       inputMode="numeric"
                       placeholder="+7 (900) 123-45-67"
                       aria-label="Телефон"
-                      value={displayValue}
-                      onChange={handleChange}
+                      value={displayPhone}
+                      onChange={() => {}}
+                      onKeyDown={handlePhoneKeyDown}
+                      onPaste={handlePhonePaste}
                       autoComplete="tel"
                       className={`w-full rounded-md pl-11 pr-4 text-[16px] font-light tracking-wide text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-all ${error ? "border-red-500/60" : ""}`}
                       style={{

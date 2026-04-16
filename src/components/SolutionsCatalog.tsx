@@ -62,7 +62,7 @@ const SolutionsCatalog = () => {
         <div className="px-5 md:px-10 lg:container pt-10 pb-10 lg:pt-[120px] lg:pb-[120px]">
           <FadeIn direction="left">
             <div className="mb-4 lg:mb-6">
-              <h2 style={{ fontSize: isMobile ? "clamp(1.8rem, 8vw, 2.4rem)" : undefined }}>Наши решения</h2>
+              <h2 style={{ fontSize: isMobile ? "clamp(1.8rem, 8vw, 2.4rem)" : undefined }}>Наши услуги</h2>
             </div>
             <p className="mb-8 lg:mb-16" style={{ fontSize: isMobile ? 14 : "0.9375rem", color: "#7a8394", maxWidth: isMobile ? "100%" : 480, lineHeight: 1.65 }}>
               Комплексная защита объектов от{"\u00a0"}БПЛА и{"\u00a0"}наземных угроз

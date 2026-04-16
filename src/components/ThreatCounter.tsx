@@ -41,16 +41,16 @@ const ThreatCounter = () => {
   return (
     <div
       className="w-full flex items-center justify-between h-7 sm:h-8"
-      style={{ padding: "0 6vw", background: "linear-gradient(135deg, hsl(var(--gold)), hsl(var(--gold-light)))" }}
+      style={{ padding: "0 6vw", background: "#f5a623" }}
     >
-      <span className="text-[11px] font-normal tracking-[0.04em]" style={{ color: "rgba(0,0,0,0.7)" }}>
+      <span className="text-[11px] font-bold tracking-[0.04em]" style={{ color: "#000000" }}>
         <span className="hidden sm:inline">Зафиксировано нарушений воздушного пространства в 2026 году:</span>
         <span className="sm:hidden">Угроз БПЛА в 2026:</span>
       </span>
       <span
         className="text-[11px] sm:text-[14px]"
         style={{
-          color: "#0a0c0f",
+          color: "#000000",
           fontWeight: 700,
           letterSpacing: "0.05em",
           fontVariantNumeric: "tabular-nums",

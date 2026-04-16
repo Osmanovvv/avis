@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import FadeIn from "@/components/FadeIn";
-import { CheckCircle2, FileText, Mail, ArrowRight, Phone, Send, ChevronDown } from "lucide-react";
+import { CheckCircle2, CheckCircle, FileText, Shield, Mail, ArrowRight, Phone, Send, ChevronDown } from "lucide-react";
 import SolutionsCatalog from "@/components/SolutionsCatalog";
 import VideoSection from "@/components/VideoSection";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -10,10 +10,10 @@ import { useContent } from "@/hooks/use-content";
 import { useSettings } from "@/hooks/use-settings";
 
 const defaultTrustStats: Array<{ value: string; label: string }> = [
-  { value: "9+", label: "лет на рынке" },
-  { value: "150+", label: "объектов" },
-  { value: "СП 542", label: "проектирование" },
-  { value: "3 года", label: "гарантия" },
+  { value: "200+", label: "Объектов защищено" },
+  { value: "12", label: "Лет опыта" },
+  { value: "5", label: "Типов решений" },
+  { value: "100%", label: "Гарантия качества" },
 ];
 
 function parseStatValue(value: string): { num: number; prefix: string; suffix: string } {
@@ -23,9 +23,10 @@ function parseStatValue(value: string): { num: number; prefix: string; suffix: s
 }
 
 /* ── Animated stat card ── */
-const StatCard = ({ value, label }: { value: string; label: string }) => {
+const StatCard = ({ value, label, isLast }: { value: string; label: string; isLast?: boolean }) => {
   const { num, prefix, suffix } = parseStatValue(value);
   const isNumeric = num > 0;
+  const isMobile = useIsMobile();
   const { count, ref } = useCountUp({
     end: num,
     duration: num > 100 ? 1500 : 1000,
@@ -35,26 +36,24 @@ const StatCard = ({ value, label }: { value: string; label: string }) => {
   return (
     <div
       ref={ref}
-      className="rounded-lg text-center py-6 px-4 md:py-8 transition-shadow duration-300 hover:shadow-[0_0_0_1px_rgba(74,127,165,0.3)]"
+      className="text-center"
       style={{
-        background: "rgba(255,255,255,0.02)",
-        border: "1px solid rgba(255,255,255,0.05)",
-        borderTop: "2px solid rgba(74,127,165,0.5)",
+        padding: isMobile ? "28px 16px" : "40px 24px",
+        borderRight: !isLast ? "1px solid rgba(255,255,255,0.06)" : "none",
       }}
     >
       <div
         style={{
-          fontSize: "clamp(2rem, 6vw, 2.5rem)",
+          fontSize: isMobile ? "1.8rem" : "2.2rem",
           fontWeight: 700,
           color: "#ffffff",
           lineHeight: 1,
-          letterSpacing: "-0.02em",
           fontVariantNumeric: "tabular-nums",
         }}
       >
         {isNumeric ? `${prefix}${count}${suffix}` : value}
       </div>
-      <div className="mt-2" style={{ fontSize: "0.75rem", color: "#7a8394" }}>
+      <div style={{ fontSize: 12, color: "#7a8394", marginTop: 6 }}>
         {label}
       </div>
     </div>
@@ -143,33 +142,38 @@ const HeroSection = ({
             <span
               className="block"
               style={{
-                fontSize: isMobile ? "clamp(2.4rem, 10.5vw, 3.2rem)" : "clamp(3.5rem, 5.5vw, 5rem)",
+                fontSize: isMobile ? 36 : "clamp(4rem, 6.5vw, 6.5rem)",
                 lineHeight: 0.95,
                 letterSpacing: "-0.03em",
-                fontWeight: 800,
-                background: "linear-gradient(135deg, #ffffff 0%, #c8d4e0 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                fontWeight: 900,
+                color: "#ffffff",
+                textTransform: "uppercase",
               }}
             >
-              {heroData?.line1 || (isMobile ? <>ЗАЩИТА<br />ОБЪЕКТОВ<br />ОТ{"\u00a0"}БПЛА</> : <>ЗАЩИТА ОБЪЕКТОВ{"\u00a0"}ОТ{"\u00a0"}БПЛА</>)}
+              {heroData?.line1 || <>ЗАЩИТА<br />ОБЪЕКТОВ ОТ<br />БПЛА</>}
             </span>
           </h1>
         </FadeIn>
 
         {heroData?.subtitle && (
           <FadeIn delay={0.1}>
-            <p
+            <div
+              className="flex items-center justify-center gap-3"
               style={{
-                fontSize: isMobile ? "1rem" : "clamp(1.1rem, 2vw, 1.5rem)",
-                letterSpacing: isMobile ? "0.04em" : "0.12em",
-                fontWeight: 600,
+                marginTop: isMobile ? 16 : 24,
+                fontSize: isMobile ? 14 : "clamp(1.1rem, 2vw, 1.5rem)",
+                fontWeight: 700,
+                letterSpacing: "0.15em",
                 color: "#4a7fa5",
-                marginTop: isMobile ? 8 : 16,
               }}
             >
-              {heroData.subtitle}
-            </p>
+              {heroData.subtitle.split("·").map((part, i, arr) => (
+                <span key={i} style={{ display: "contents" }}>
+                  <span>{part.trim()}</span>
+                  {i < arr.length - 1 && <span style={{ color: "#4a4e5a" }}>·</span>}
+                </span>
+              ))}
+            </div>
           </FadeIn>
         )}
 
@@ -179,9 +183,9 @@ const HeroSection = ({
             style={{ marginTop: isMobile ? 20 : 28 }}
           >
             {features.map((text, i) => text && (
-              <div key={i} className="flex items-center gap-2">
-                <CheckCircle2 size={isMobile ? 16 : 13} className="shrink-0" style={{ color: "#4a7fa5" }} />
-                <span style={{ fontSize: isMobile ? 14 : 13, color: "#7a8394" }}>{text}</span>
+              <div key={i} className="flex items-center gap-2" style={{ fontSize: isMobile ? 12 : 14, color: "rgba(255,255,255,0.85)" }}>
+                <CheckCircle size={14} style={{ color: "#4a7fa5", flexShrink: 0 }} />
+                <span>{text}</span>
               </div>
             ))}
           </div>
@@ -189,43 +193,60 @@ const HeroSection = ({
 
         <FadeIn delay={0.25} className={isMobile ? "w-full" : ""}>
           <div
-            className="flex flex-col sm:flex-row gap-[10px] sm:gap-3"
-            style={{ marginTop: isMobile ? 28 : 44, width: isMobile ? "100%" : "auto" }}
+            className={isMobile ? "flex flex-col gap-3 w-full" : "flex gap-4 justify-center"}
+            style={{ marginTop: isMobile ? 28 : 40 }}
           >
             <a
               href={telHref}
-              className="btn-gold inline-flex items-center justify-center gap-2.5 font-semibold relative overflow-hidden"
+              className="hero-cta-pulse inline-flex items-center justify-center gap-2.5 relative overflow-hidden"
               style={{
                 width: isMobile ? "100%" : 260,
                 height: 52,
-                borderRadius: 12,
-                fontSize: isMobile ? 15 : 14,
-                letterSpacing: "0.04em",
+                borderRadius: 10,
+                fontSize: 14,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                background: "#f5a623",
+                color: "#000000",
+                textDecoration: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "0 28px",
               }}
             >
               <Phone size={16} />
               Запросить аудит
-              <ArrowRight size={15} />
+              <ArrowRight size={16} />
             </a>
             <a
               href={tgHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="tg-btn inline-flex items-center justify-center gap-2.5 font-semibold transition-all duration-200"
+              className="inline-flex items-center justify-center gap-2.5 transition-all duration-200"
               style={{
-                width: isMobile ? "100%" : 220,
+                width: isMobile ? "100%" : 200,
                 height: 52,
-                borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.15)",
-                background: "rgba(255,255,255,0.04)",
-                color: "#c0cdd8",
-                fontSize: isMobile ? 15 : 14,
-                letterSpacing: "0.04em",
-                backdropFilter: "blur(8px)",
+                borderRadius: 10,
+                fontSize: 14,
+                fontWeight: 500,
+                letterSpacing: "0.06em",
+                background: "rgba(255,255,255,0.08)",
+                color: "#ffffff",
+                textDecoration: "none",
+                border: "1px solid rgba(255,255,255,0.25)",
+                cursor: "pointer",
+                padding: "0 28px",
               }}
-              
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "#ffffff";
+                e.currentTarget.style.background = "rgba(255,255,255,0.12)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)";
+                e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+              }}
             >
-              <Send size={15} />
+              <Send size={16} />
               Telegram
             </a>
           </div>
@@ -277,7 +298,11 @@ const clientsCol2 = [
   'ООО «Группа Компаний „Rusagro"»',
   'УПРО «Объединённый санаторий „Русь"»',
 ];
-const allClients = [...clientsCol1, ...clientsCol2];
+const allClients: string[] = [];
+for (let i = 0; i < Math.max(clientsCol1.length, clientsCol2.length); i++) {
+  if (clientsCol1[i]) allClients.push(clientsCol1[i]);
+  if (clientsCol2[i]) allClients.push(clientsCol2[i]);
+}
 
 const certificates = [
   { name: "СРО", href: "/documents/sro-avis.pdf" },
@@ -289,24 +314,23 @@ const certificates = [
 ];
 
 /* ── Client row component ── */
-const ClientRow = ({ name }: { name: string }) => (
+const ClientRow = ({ name, isMobile }: { name: string; isMobile?: boolean }) => (
   <div
-    className="flex items-center gap-3 transition-colors duration-200 hover:bg-[rgba(74,127,165,0.05)]"
+    className="flex items-center gap-3"
     style={{
-      padding: "14px 20px",
+      padding: isMobile ? "12px 0" : "14px 0",
       borderBottom: "1px solid rgba(255,255,255,0.06)",
+      fontSize: isMobile ? 13 : 14,
+      color: "#b0bac8",
     }}
   >
-    <span
-      className="flex-shrink-0 rounded-full"
-      style={{ width: 4, height: 4, background: "#4a7fa5" }}
-    />
-    <span style={{ fontSize: 13, color: "#c0cdd8", lineHeight: 1.4 }}>{name}</span>
+    <span style={{ color: "#4a7fa5", fontSize: 8, flexShrink: 0 }}>●</span>
+    {name}
   </div>
 );
 
 /* ── Trust section ── */
-const TrustSection = ({ stats }: { stats: Array<{ value: string; label: string }> }) => {
+const TrustSection = ({ stats, email }: { stats: Array<{ value: string; label: string }>; email?: string }) => {
   const { containerRef, revealed } = useStaggerReveal();
   const isMobile = useIsMobile();
   const [showAllClients, setShowAllClients] = useState(false);
@@ -315,153 +339,203 @@ const TrustSection = ({ stats }: { stats: Array<{ value: string; label: string }
   const hiddenCount = allClients.length - 6;
 
   return (
-    <section style={{ background: "#090b0e" }}>
+    <>
+    <section style={{ background: "#0d0f12", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <div
+        ref={containerRef}
+        className="mx-auto grid grid-cols-2 lg:grid-cols-4 gap-0"
+        style={{ maxWidth: 1200 }}
+      >
+        {stats.map((stat, i) => (
+          <div
+            key={stat.label + i}
+            style={{
+              opacity: revealed ? 1 : 0,
+              transform: revealed ? "translateY(0)" : "translateY(24px)",
+              transition: `opacity 0.5s cubic-bezier(0.25,0.46,0.45,0.94) ${i * (isMobile ? 40 : 80)}ms, transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94) ${i * (isMobile ? 40 : 80)}ms`,
+            }}
+          >
+            <StatCard value={stat.value} label={stat.label} isLast={i === stats.length - 1} />
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section style={{ background: "#0d0f12", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
       <div
         className="mx-auto"
         style={{
           maxWidth: 1200,
-          padding: isMobile ? "48px 20px" : "80px 40px",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          padding: isMobile ? "48px 20px" : "64px 40px",
         }}
       >
-        {/* ── Stats row ── */}
-        <div ref={containerRef} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat, i) => (
-            <div
-              key={stat.label + i}
-              style={{
-                opacity: revealed ? 1 : 0,
-                transform: revealed ? "translateY(0)" : "translateY(24px)",
-                transition: `opacity 0.5s cubic-bezier(0.25,0.46,0.45,0.94) ${i * (isMobile ? 40 : 80)}ms, transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94) ${i * (isMobile ? 40 : 80)}ms`,
-              }}
-            >
-              <StatCard value={stat.value} label={stat.label} />
-            </div>
-          ))}
-        </div>
-
         {/* ── Clients ── */}
-        <div style={{ marginTop: 56 }}>
+        <div>
           <h3
             style={{
               fontSize: "0.6875rem",
               textTransform: "uppercase",
               letterSpacing: "0.18em",
               color: "#4a7fa5",
-              marginBottom: 24,
+              margin: 0,
+              marginBottom: isMobile ? 24 : 32,
               fontWeight: 600,
             }}
           >
             Наши заказчики
           </h3>
 
-          {isMobile ? (
-            <>
-              <div
-                style={{
-                  overflow: "hidden",
-                  transition: "max-height 0.4s ease",
-                  maxHeight: showAllClients ? allClients.length * 60 : 6 * 60,
-                }}
-              >
-                {visibleClients.map((c) => (
-                  <ClientRow key={c} name={c} />
-                ))}
-              </div>
-              {!showAllClients && (
-                <button
-                  onClick={() => setShowAllClients(true)}
-                  style={{
-                    fontSize: 13,
-                    color: "#4a7fa5",
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: "14px 20px",
-                    width: "100%",
-                    textAlign: "left",
-                  }}
-                >
-                  Показать все заказчики (ещё {hiddenCount})
-                </button>
-              )}
-            </>
-          ) : (
-            <div className="grid grid-cols-2" style={{ gap: 0 }}>
-              <div>
-                {clientsCol1.map((c) => (
-                  <ClientRow key={c} name={c} />
-                ))}
-              </div>
-              <div>
-                {clientsCol2.map((c) => (
-                  <ClientRow key={c} name={c} />
-                ))}
-              </div>
-            </div>
+          <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-0`}>
+            {visibleClients.map((c) => (
+              <ClientRow key={c} name={c} isMobile={isMobile} />
+            ))}
+          </div>
+          {isMobile && !showAllClients && hiddenCount > 0 && (
+            <button
+              onClick={() => setShowAllClients(true)}
+              style={{
+                marginTop: 16,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontSize: 12,
+                color: "#4a7fa5",
+                letterSpacing: "0.1em",
+              }}
+            >
+              Показать все ↓
+            </button>
           )}
         </div>
 
         {/* ── Certificates ── */}
-        <div style={{ marginTop: 48 }}>
+        <div style={{ marginTop: isMobile ? 48 : 64 }}>
           <h3
             style={{
               fontSize: "0.6875rem",
               textTransform: "uppercase",
               letterSpacing: "0.18em",
               color: "#4a7fa5",
-              marginBottom: 24,
+              margin: 0,
+              marginBottom: isMobile ? 16 : 24,
               fontWeight: 600,
             }}
           >
             Сертификаты и документы
           </h3>
 
-          <div
-            className="flex gap-3 overflow-x-auto pb-1"
-            style={{
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-              WebkitOverflowScrolling: "touch",
-            }}
-          >
+          <div className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-6"} gap-3`}>
             {certificates.map((cert) => (
               <a
                 key={cert.name}
                 href={cert.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="cert-link flex-shrink-0 flex items-center gap-2.5 rounded-[10px] transition-all duration-200"
+                className="flex items-center gap-3 rounded-lg transition-colors duration-200 hover:border-[rgba(74,127,165,0.4)]"
                 style={{
-                  width: 160,
-                  height: 56,
-                  padding: "0 16px",
+                  padding: isMobile ? "14px 12px" : "16px",
                   background: "rgba(255,255,255,0.03)",
                   border: "1px solid rgba(255,255,255,0.08)",
                   textDecoration: "none",
                 }}
               >
-                <FileText size={16} style={{ color: "#4a7fa5", flexShrink: 0 }} />
+                <Shield size={16} style={{ color: "#4a7fa5", flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "#ffffff", lineHeight: 1.3 }}>
-                    {cert.name}
-                  </div>
-                  <div style={{ fontSize: 10, color: "#4a7fa5" }}>Открыть PDF</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#c0cdd8" }}>{cert.name}</div>
+                  <div style={{ fontSize: 11, color: "#4a7fa5", marginTop: 2 }}>Открыть PDF</div>
                 </div>
               </a>
             ))}
           </div>
 
-          <a
-            href="mailto:avisooo708@gmail.com"
-            className="inline-flex items-center gap-2 mt-4"
-            style={{ fontSize: 13, color: "#7a8394", textDecoration: "none" }}
-          >
-            <Mail size={14} style={{ color: "#4a7fa5" }} />
-            avisooo708@gmail.com
-          </a>
+          {email && (
+            <a
+              href={`mailto:${email}`}
+              className="inline-flex items-center gap-2"
+              style={{ marginTop: isMobile ? 32 : 40, fontSize: 13, color: "#7a8394", textDecoration: "none" }}
+            >
+              <Mail size={14} style={{ color: "#4a7fa5" }} />
+              {email}
+            </a>
+          )}
         </div>
+      </div>
+    </section>
+    </>
+  );
+};
+
+const LeadFormSection = ({ telHref, tgHref }: { telHref: string; tgHref: string }) => {
+  const isMobile = useIsMobile();
+  return (
+    <section style={{ background: "#090b0e", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <div
+        className="mx-auto text-center"
+        style={{ maxWidth: 640, padding: isMobile ? "56px 20px" : "80px 40px" }}
+      >
+        <FadeIn>
+          <h2
+            style={{
+              fontSize: isMobile ? "1.5rem" : "clamp(1.8rem, 3vw, 2.2rem)",
+              fontWeight: 700,
+              color: "#ffffff",
+              lineHeight: 1.2,
+              margin: 0,
+            }}
+          >
+            Бесплатный аудит объекта
+          </h2>
+          <p style={{ fontSize: 14, color: "#7a8394", marginTop: 12, lineHeight: 1.6 }}>
+            Оценим угрозы и{"\u00a0"}предложим оптимальное решение защиты вашего объекта от{"\u00a0"}БПЛА
+          </p>
+        </FadeIn>
+
+        <FadeIn delay={0.15}>
+          <div
+            className={`flex ${isMobile ? "flex-col" : "flex-row"} items-center justify-center gap-3`}
+            style={{ marginTop: 32 }}
+          >
+            <a
+              href={telHref}
+              className="hero-cta-pulse inline-flex items-center justify-center gap-2.5 font-semibold"
+              style={{
+                width: isMobile ? "100%" : 240,
+                height: 52,
+                borderRadius: 10,
+                fontSize: 14,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                background: "#f5a623",
+                color: "#000000",
+                textDecoration: "none",
+              }}
+            >
+              <Phone size={16} />
+              ПОЗВОНИТЬ
+            </a>
+            <a
+              href={tgHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2.5 font-semibold transition-colors duration-200"
+              style={{
+                width: isMobile ? "100%" : 240,
+                height: 52,
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 600,
+                letterSpacing: "0.06em",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                color: "#c0cdd8",
+                textDecoration: "none",
+              }}
+            >
+              <Send size={16} />
+              TELEGRAM
+            </a>
+          </div>
+        </FadeIn>
       </div>
     </section>
   );
@@ -487,8 +561,9 @@ const Index = () => {
       />
       <HeroSection heroData={content?.hero} telHref={telHref} tgHref={tgHref} />
       <SolutionsCatalog />
+      <TrustSection stats={content?.stats?.length && content.stats.some((s) => s.value) ? content.stats : defaultTrustStats} email={content?.contacts?.email || settings?.email || ""} />
       <VideoSection />
-      <TrustSection stats={content?.stats?.length && content.stats.some((s) => s.value) ? content.stats : defaultTrustStats} />
+      <LeadFormSection telHref={telHref} tgHref={tgHref} />
     </div>
   );
 };

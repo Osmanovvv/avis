@@ -1,23 +1,17 @@
-/* Fonts: self-hosted Inter with preload + swap */
-@font-face {
-  font-family: 'Inter';
-  src: url('/fonts/inter-cyrillic-wght-normal.woff2') format('woff2');
-  font-weight: 200 600;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-}
-@font-face {
-  font-family: 'Inter';
-  src: url('/fonts/inter-latin-wght-normal.woff2') format('woff2');
-  font-weight: 200 600;
-  font-style: normal;
-  font-display: swap;
-}
+/* Fonts loaded via index.html (Google Fonts, weights 300-900) */
 
 /* Hide scrollbar for horizontal scroll containers */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Hero CTA pulse animation */
+@keyframes hero-cta-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(184,134,11,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(184,134,11,0); }
+}
+.hero-cta-pulse {
+  animation: hero-cta-pulse 2.5s infinite;
+}
 
 @tailwind base;
 @tailwind components;

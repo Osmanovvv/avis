@@ -12,6 +12,34 @@ const navLinks = [
   { label: "Проекты", path: "/cases" },
 ];
 
+const serviceLinks = [
+  { label: "Антидроновые сетки", path: "/services/nets" },
+  { label: "Полиамидные сетки", path: "/services/polyamide" },
+  { label: "Комплексная защита", path: "/services/engineering" },
+  { label: "Защита зданий", path: "/services/buildings" },
+  { label: "Ограждения и периметр", path: "/services/fencing" },
+  { label: "Убежища и укрытия", path: "/services/shelters" },
+  { label: "Монтаж и сервис", path: "/services/production" },
+];
+
+const legalLinks = [
+  { label: "Политика конфиденциальности", path: "/privacy" },
+  { label: "Пользовательское соглашение", path: "/terms" },
+  { label: "Согласие на обработку данных", path: "/consent" },
+];
+
+const FooterLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
+  <Link
+    to={to}
+    className="transition-colors duration-200 block"
+    style={{ fontSize: 13, color: "#4a5568" }}
+    onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "#c0cdd8"; }}
+    onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "#4a5568"; }}
+  >
+    {children}
+  </Link>
+);
+
 const Footer = () => {
   const { content } = useContent();
   const { settings } = useSettings();
@@ -23,6 +51,7 @@ const Footer = () => {
   const tgUsername = tgUsernameRaw.replace(/^@/, "");
   const companyName = settings?.companyName || "";
   const inn = settings?.inn || "";
+  const ogrn = settings?.ogrn || "";
 
   const telHref = phone ? `tel:${phone.replace(/[^+\d]/g, "")}` : "";
   const tgHref = tgUsername ? `https://t.me/${tgUsername}` : "";
@@ -36,11 +65,15 @@ const Footer = () => {
   if (tgUsername) contacts.push({ icon: Send, text: `@${tgUsername}`, href: tgHref, highlight: true, target: "_blank" });
   contacts.push({ icon: MessageCircle, text: "WhatsApp", href: waHref, highlight: true, target: "_blank" });
 
+  const legalLine = [companyName, inn && `ИНН: ${inn}`, ogrn && `ОГРН: ${ogrn}`].filter(Boolean).join(" · ");
+
   return (
     <footer style={{ background: "#080a0d", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
       <div className="px-5 pt-9 pb-6 md:px-[6vw] md:pt-12 md:pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-[30%_30%_40%] gap-10 md:gap-6">
-          <div className="order-1">
+        {/* Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-6">
+          {/* Brand */}
+          <div>
             <img src="/logo-avis-header.webp" alt="АВИС" width={40} height={40} className="h-[40px] w-auto object-contain" />
             <p className="mt-2 max-w-[200px]" style={{ fontSize: 13, color: "#4a5568" }}>
               Инженерная защита объектов от БПЛА
@@ -50,8 +83,46 @@ const Footer = () => {
             </p>
           </div>
 
-          <div className="order-2 md:order-3">
-            <h4 className="mb-4 uppercase" style={{ fontSize: 10, letterSpacing: "0.12em", color: "#374151" }}>Контакты</h4>
+          {/* Navigation */}
+          <div>
+            <h4 className="mb-4 uppercase" style={{ fontSize: 10, letterSpacing: "0.12em", color: "#374151" }}>
+              Навигация
+            </h4>
+            <ul className="space-y-2">
+              {navLinks.map((item) => (
+                <li key={item.path}><FooterLink to={item.path}>{item.label}</FooterLink></li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Services */}
+          <div>
+            <h4 className="mb-4 uppercase" style={{ fontSize: 10, letterSpacing: "0.12em", color: "#374151" }}>
+              Услуги
+            </h4>
+            <ul className="space-y-1.5">
+              <li>
+                <Link
+                  to="/solutions"
+                  className="transition-colors duration-200 font-semibold"
+                  style={{ fontSize: 13, color: "#7a8394" }}
+                  onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "#c0cdd8"; }}
+                  onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "#7a8394"; }}
+                >
+                  Каталог услуг →
+                </Link>
+              </li>
+              {serviceLinks.map((item) => (
+                <li key={item.path}><FooterLink to={item.path}>{item.label}</FooterLink></li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contacts */}
+          <div>
+            <h4 className="mb-4 uppercase" style={{ fontSize: 10, letterSpacing: "0.12em", color: "#374151" }}>
+              Контакты
+            </h4>
             <ul className="space-y-2">
               {contacts.map((c, idx) => {
                 const inner = (
@@ -81,44 +152,36 @@ const Footer = () => {
               })}
             </ul>
           </div>
-
-          <div className="order-3 md:order-2">
-            <h4 className="mb-4 uppercase" style={{ fontSize: 10, letterSpacing: "0.12em", color: "#374151" }}>Навигация</h4>
-            <ul className="space-y-2">
-              {navLinks.map((item) => (
-                <li key={item.path}>
-                  <Link
-                    to={item.path}
-                    className="transition-colors duration-200"
-                    style={{ fontSize: 13, color: "#4a5568" }}
-                    onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "#c0cdd8"; }}
-                    onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "#4a5568"; }}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
 
+        {/* Legal links */}
         <div
-          className="mt-10 pt-5 flex flex-col items-center gap-3 md:flex-row md:justify-between md:items-center"
+          className="mt-8 pt-5 flex flex-col md:flex-row md:items-center gap-3 md:gap-6"
           style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
         >
-          <span style={{ fontSize: 11, color: "#374151" }}>
-            {companyName && `${companyName}`}{companyName && inn && ` · `}{inn && `ИНН: ${inn}`}
-          </span>
+          {legalLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className="transition-colors duration-200"
+              style={{ fontSize: 11, color: "#374151" }}
+              onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "#6b7280"; }}
+              onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "#374151"; }}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Bottom bar */}
+        <div
+          className="mt-4 pt-4 flex flex-col items-center gap-3 md:flex-row md:justify-between md:items-center"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
+        >
+          {legalLine && (
+            <span style={{ fontSize: 11, color: "#374151" }}>{legalLine}</span>
+          )}
           <span style={{ fontSize: 11, color: "#374151" }}>© 2026 АВИС. Все права защищены.</span>
-          <Link
-            to="/privacy"
-            className="transition-colors duration-200"
-            style={{ fontSize: 11, color: "#374151" }}
-            onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "#6b7280"; }}
-            onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "#374151"; }}
-          >
-            Политика конфиденциальности
-          </Link>
         </div>
       </div>
     </footer>

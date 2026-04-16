@@ -83,7 +83,7 @@ const VideoPlayer = ({ video }: { video: VideoItem }) => {
             muted={muted}
             loop
             playsInline
-            preload="none"
+            preload="metadata"
             className="h-full w-full object-cover"
             onEnded={() => { setPlaying(false); setShowOverlay(true); }}
           />

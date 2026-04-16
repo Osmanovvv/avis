@@ -98,6 +98,7 @@ const Header = () => {
                 to={item.path}
                 className={`px-3 py-2 text-[11px] uppercase tracking-[0.15em] font-light transition-colors duration-200
                   ${location.pathname === item.path ? "text-foreground" : "text-muted-foreground hover:text-accent"}`}
+                style={location.pathname === item.path ? { color: "#f5a623" } : undefined}
               >
                 {item.label}
               </Link>
@@ -117,7 +118,20 @@ const Header = () => {
               </a>
             )}
             <Link to="/contacts">
-              <Button variant="cta" size="sm">Запросить аудит</Button>
+              <button
+                className="px-5 py-2 text-[11px] uppercase tracking-[0.1em] font-medium transition-all duration-200"
+                style={{
+                  border: "1px solid #f5a623",
+                  color: "#f5a623",
+                  background: "transparent",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(245,166,35,0.1)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+              >
+                Запросить аудит
+              </button>
             </Link>
           </div>
 
@@ -187,7 +201,7 @@ const Header = () => {
                         letterSpacing: "0.04em",
                         padding: "18px 0",
                         borderBottom: "1px solid rgba(255,255,255,0.07)",
-                        color: location.pathname === item.path ? "hsl(var(--gold-light))" : "#ffffff",
+                        color: location.pathname === item.path ? "#f5a623" : "#ffffff",
                       }}
                     >
                       {item.label}
@@ -214,11 +228,15 @@ const Header = () => {
                 )}
                 <Link to="/contacts" onClick={() => setMobileOpen(false)}>
                   <button
-                    className="btn-gold w-full flex items-center justify-center gap-2 font-bold text-[14px] uppercase tracking-[0.08em]"
+                    className="w-full flex items-center justify-center gap-2 font-bold text-[14px] uppercase tracking-[0.08em]"
                     style={{
                       height: 52,
                       borderRadius: 12,
                       marginTop: 16,
+                      background: "#f5a623",
+                      color: "#000",
+                      border: "none",
+                      cursor: "pointer",
                     }}
                   >
                     Запросить аудит

@@ -18,6 +18,11 @@ interface SiteSettings {
   companyName: string;
   inn: string;
   ogrn: string;
+  kpp: string;
+  bankAccount: string;
+  bankName: string;
+  bik: string;
+  productionAddress: string;
   seo: Record<string, SeoFields>;
 }
 
@@ -38,6 +43,11 @@ const defaultSettings: SiteSettings = {
   companyName: "",
   inn: "",
   ogrn: "",
+  kpp: "",
+  bankAccount: "",
+  bankName: "",
+  bik: "",
+  productionAddress: "",
   seo: {},
 };
 
@@ -110,7 +120,7 @@ const AdminSettings = () => {
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <label className="text-sm text-muted-foreground mb-1 block">Название компании</label>
+            <label className="text-sm text-muted-foreground mb-1 block">Полное юридическое название</label>
             <Input value={settings.companyName} onChange={(e) => update("companyName", e.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -122,6 +132,50 @@ const AdminSettings = () => {
               <label className="text-sm text-muted-foreground mb-1 block">ОГРН</label>
               <Input value={settings.ogrn} onChange={(e) => update("ogrn", e.target.value)} />
             </div>
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">КПП</label>
+              <Input value={settings.kpp} onChange={(e) => update("kpp", e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">БИК</label>
+              <Input value={settings.bik} onChange={(e) => update("bik", e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <label className="text-sm text-muted-foreground mb-1 block">Расчётный счёт</label>
+            <Input value={settings.bankAccount} onChange={(e) => update("bankAccount", e.target.value)} />
+          </div>
+          <div>
+            <label className="text-sm text-muted-foreground mb-1 block">Банк</label>
+            <Input value={settings.bankName} onChange={(e) => update("bankName", e.target.value)} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Addresses */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-medium">Адреса</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <label className="text-sm text-muted-foreground mb-1 block">Юридический адрес</label>
+            <Input
+              value={settings.address}
+              onChange={(e) => update("address", e.target.value)}
+              placeholder="г.Сочи ул.Пригородная 6, офис 5"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Дублирует поле «Адрес» из раздела «Контент → Контакты». При изменении тут — обновите и там.
+            </p>
+          </div>
+          <div>
+            <label className="text-sm text-muted-foreground mb-1 block">Адрес производства</label>
+            <Input
+              value={settings.productionAddress}
+              onChange={(e) => update("productionAddress", e.target.value)}
+              placeholder="г.Сочи ул.Пригородная 6"
+            />
           </div>
         </CardContent>
       </Card>

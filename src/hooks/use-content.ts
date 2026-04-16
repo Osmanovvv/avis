@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
+import type { ServiceCategory } from "@/data/serviceCategories";
 
 interface AdminServiceMaterial { name: string; photo?: string; specs: string; badge?: string }
 interface ProductDetail {
@@ -27,6 +28,7 @@ interface ContentData {
   contacts: { phone: string; email: string; telegram: string; address: string };
   videoSlots?: { video01_poster: string; video01_mp4: string; video02_poster: string; video02_mp4: string };
   catalog?: Array<{ id: string; title: string; products: Array<{ id: string; name: string; description: string; image: string }> }>;
+  categories?: ServiceCategory[];
 }
 
 // Shared cache so multiple components don't re-fetch
@@ -46,6 +48,7 @@ function fetchContent(): Promise<ContentData> {
       contacts: data.contacts || { phone: "", email: "", telegram: "", address: "" },
       videoSlots: data.videoSlots || undefined,
       catalog: data.catalog || undefined,
+      categories: data.categories || undefined,
       services: data.services || undefined,
     };
     return cache;

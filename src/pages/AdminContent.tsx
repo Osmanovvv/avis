@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { api } from "@/lib/api";
 import { Check, Loader2, Upload, X, Plus, Trash2, ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { invalidateContentCache } from "@/hooks/use-content";
+import { defaultServiceCategories, type ServiceCategory } from "@/data/serviceCategories";
 
 interface CatalogProduct {
   id: string;
@@ -37,6 +38,9 @@ interface ProductCard {
   description: string;
   image: string;
   slug?: string;
+  category?: string;
+  featured?: boolean;
+  shortDesc?: string;
   detail?: ProductDetail;
 }
 
@@ -47,6 +51,7 @@ interface ContentData {
   about: { description: string; advantages: string[] };
   contacts: { phone: string; email: string; telegram: string; address: string };
   catalog: CatalogCategory[];
+  categories: ServiceCategory[];
 }
 
 // Транслитерация русского → латиница, нижний регистр, дефисы
@@ -67,6 +72,7 @@ const defaultContent: ContentData = {
   about: { description: "", advantages: ["", "", "", ""] },
   contacts: { phone: "", email: "", telegram: "", address: "" },
   catalog: [],
+  categories: defaultServiceCategories,
 };
 
 const AdminContent = () => {
@@ -90,6 +96,7 @@ const AdminContent = () => {
         about: data.about || defaultContent.about,
         contacts: data.contacts || defaultContent.contacts,
         catalog: data.catalog || defaultContent.catalog,
+        categories: Array.isArray(data.categories) && data.categories.length > 0 ? data.categories : defaultContent.categories,
       });
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
@@ -104,6 +111,7 @@ const AdminContent = () => {
         api.updateContent("about", content.about),
         api.updateContent("contacts", content.contacts),
         api.updateContent("catalog", content.catalog),
+        api.updateContent("categories", content.categories),
       ]);
       invalidateContentCache();
       setSaved(true);
@@ -266,6 +274,83 @@ const AdminContent = () => {
     setContent((prev) => ({ ...prev, contacts: { ...prev.contacts, [field]: value } }));
   };
 
+  // Categories
+  const updateCategory = (index: number, field: keyof ServiceCategory, value: any) => {
+    setContent((prev) => {
+      const categories = [...prev.categories];
+      categories[index] = { ...categories[index], [field]: value };
+      if (field === "label") {
+        categories[index].slug = slugify(value);
+      }
+      return { ...prev, categories };
+    });
+  };
+  const handleCategoryImage = async (index: number, file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 5 * 1024 * 1024) { alert("Максимум 5MB"); return; }
+    try {
+      const { url } = await api.uploadMedia(file);
+      updateCategory(index, "image", url);
+    } catch { alert("Ошибка загрузки"); }
+  };
+  const addCategory = () => {
+    setContent((prev) => ({
+      ...prev,
+      categories: [
+        ...prev.categories,
+        {
+          id: `cat-${Date.now()}`,
+          slug: "",
+          label: "",
+          image: "",
+          shortDesc: "",
+          order: (prev.categories.length > 0 ? Math.max(...prev.categories.map((c) => c.order ?? 0)) : 0) + 1,
+          featured: true,
+        },
+      ],
+    }));
+  };
+  const removeCategory = (index: number) => {
+    if (!confirm("Удалить категорию? Услуги в ней не удалятся, но потеряют привязку.")) return;
+    setContent((prev) => ({ ...prev, categories: prev.categories.filter((_, i) => i !== index) }));
+  };
+  const moveCategory = (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    setContent((prev) => {
+      if (target < 0 || target >= prev.categories.length) return prev;
+      const categories = [...prev.categories];
+      [categories[index], categories[target]] = [categories[target], categories[index]];
+      // Sync order field
+      categories.forEach((c, i) => { c.order = i + 1; });
+      return { ...prev, categories };
+    });
+  };
+
+  // Category detail page
+  const [editingCatIdx, setEditingCatIdx] = useState<number | null>(null);
+  const [catDragOver, setCatDragOver] = useState(false);
+  const addCategoryGalleryImage = async (index: number, file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 5 * 1024 * 1024) { alert("Максимум 5MB"); return; }
+    try {
+      const { url } = await api.uploadMedia(file);
+      setContent((prev) => {
+        const categories = [...prev.categories];
+        const gallery = [...(categories[index].gallery || []), url];
+        categories[index] = { ...categories[index], gallery };
+        return { ...prev, categories };
+      });
+    } catch { alert("Ошибка загрузки"); }
+  };
+  const removeCategoryGalleryImage = (index: number, gIdx: number) => {
+    setContent((prev) => {
+      const categories = [...prev.categories];
+      const gallery = (categories[index].gallery || []).filter((_, i) => i !== gIdx);
+      categories[index] = { ...categories[index], gallery };
+      return { ...prev, categories };
+    });
+  };
+
   // About
   const updateAbout = (field: "description", value: string) => {
     setContent((prev) => ({ ...prev, about: { ...prev.about, [field]: value } }));
@@ -374,6 +459,86 @@ const AdminContent = () => {
         </CardContent>
       </Card>
 
+      {/* Categories */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <CardTitle className="text-base font-medium">Категории услуг</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">
+                Используются в меню, фильтре каталога и карточках на главной. Каждая услуга ниже привязывается к одной из этих категорий.
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={addCategory} className="gap-1">
+              <Plus className="w-4 h-4" /> Категория
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {content.categories.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Нет категорий. Нажмите «+ Категория».
+            </p>
+          )}
+          {content.categories.map((cat, i) => (
+            <div key={cat.id || i} className="space-y-2 pb-4 border-b border-border/50 last:border-0 last:pb-0">
+              <div className="flex items-center justify-between">
+                <label className="text-sm text-muted-foreground">Категория {i + 1}</label>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="w-7 h-7" disabled={i === 0} onClick={() => moveCategory(i, -1)} title="Вверх">
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="w-7 h-7" disabled={i === content.categories.length - 1} onClick={() => moveCategory(i, 1)} title="Вниз">
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => removeCategory(i)} title="Удалить">
+                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                {cat.image ? (
+                  <div className="relative w-24 h-[72px] rounded border border-border overflow-hidden shrink-0">
+                    <img src={cat.image} alt="" className="w-full h-full object-cover" width={96} height={72} />
+                    <button
+                      type="button"
+                      onClick={() => updateCategory(i, "image", "")}
+                      className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80"
+                    >
+                      <X className="w-3 h-3 text-white" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="w-24 h-[72px] rounded border-2 border-dashed border-border hover:border-muted-foreground flex flex-col items-center justify-center cursor-pointer shrink-0">
+                    <Upload className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-[10px] text-muted-foreground mt-0.5">Фото</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCategoryImage(i, f); e.target.value = ""; }} />
+                  </label>
+                )}
+                <div className="flex-1 space-y-2">
+                  <Input placeholder="Название" value={cat.label} onChange={(e) => updateCategory(i, "label", e.target.value)} />
+                  <Input placeholder="Короткое описание (плашка над карточкой)" value={cat.description || ""} onChange={(e) => updateCategory(i, "description", e.target.value)} />
+                  <Input placeholder="Подзаголовок на странице категории" value={cat.shortDesc || ""} onChange={(e) => updateCategory(i, "shortDesc", e.target.value)} />
+                  <div className="text-[11px] text-muted-foreground">
+                    URL: <span className="font-mono">/solutions/category/{cat.slug || "—"}</span>
+                  </div>
+                  <div className="flex items-center justify-end pt-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingCatIdx(i)}
+                      className="gap-1 whitespace-nowrap"
+                    >
+                      <FileText className="w-3.5 h-3.5" /> Детальная страница
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
       {/* Solution cards (home — Наши решения) */}
       <Card>
         <CardHeader>
@@ -433,6 +598,18 @@ const AdminContent = () => {
                 <div className="flex-1 space-y-2">
                   <Input placeholder="Заголовок" value={product.name} onChange={(e) => updateProduct(i, "name", e.target.value)} />
                   <Input placeholder="Короткое описание (плашка над карточкой)" value={product.description} onChange={(e) => updateProduct(i, "description", e.target.value)} />
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={product.category || ""}
+                      onChange={(e) => updateProduct(i, "category", e.target.value)}
+                      className="flex-1 h-9 rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                      <option value="">— Категория —</option>
+                      {content.categories.map((c) => (
+                        <option key={c.id} value={c.id}>{c.label}</option>
+                      ))}
+                    </select>
+                  </div>
                   <div className="flex items-center justify-end pt-1">
                     <Button
                       variant="outline"
@@ -502,7 +679,6 @@ const AdminContent = () => {
             const idx = editingIdx;
             const product = content.products[idx];
             const detail: ProductDetail = product.detail || {};
-            const materials = detail.materials || [];
             const effectiveSlug = product.slug || slugify(product.name);
             return (
               <>
@@ -516,63 +692,24 @@ const AdminContent = () => {
                 </DialogHeader>
                 <div className="space-y-3 pt-2">
                   <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Описание</label>
-                    <Textarea rows={4} value={detail.description || ""}
-                      onChange={(e) => updateProductDetail(idx, "description", e.target.value)} />
+                    <label className="text-sm text-muted-foreground mb-1 block">Подзаголовок под H1 (описание)</label>
+                    <Input
+                      placeholder="Короткое описание услуги — выводится под заголовком на странице"
+                      value={product.shortDesc || ""}
+                      onChange={(e) => updateProduct(idx, "shortDesc", e.target.value)}
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">Также используется как описание в каталоге на /solutions.</p>
                   </div>
                   <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Подкатегории</label>
+                    <label className="text-sm text-muted-foreground mb-1 block">Области применения</label>
                     <Input
-                      placeholder="Например: Сетки перекрытия, Сетки по периметру, Нейлон/Кевлар"
+                      placeholder="Например: Резервуары, здания, подстанции, периметр объектов"
                       defaultValue={(detail.subcategories || []).join(", ")}
-                      key={`subcats-${idx}-${editingIdx}`}
+                      key={`areas-${idx}-${editingIdx}`}
                       onBlur={(e) => updateProductDetail(idx, "subcategories", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
                     />
-                    <p className="text-[11px] text-muted-foreground mt-1">Через запятую. Сохраняется при уходе из поля.</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">Через запятую. Выводятся как теги в блоке «Области применения» на детальной странице.</p>
                   </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Где применяется</label>
-                    <Textarea rows={2} placeholder="Резервуары, здания, подстанции, периметр объектов"
-                      value={detail.whereUsed || ""}
-                      onChange={(e) => updateProductDetail(idx, "whereUsed", e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm text-muted-foreground">Материалы ({materials.length})</label>
-                      <Button variant="outline" size="sm" onClick={() => addMaterial(idx)}>
-                        <Plus className="w-4 h-4 mr-1" /> Добавить
-                      </Button>
-                    </div>
-                    {materials.map((m, mIdx) => (
-                      <div key={mIdx} className="border rounded p-3 space-y-2 bg-muted/30">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs text-muted-foreground">Материал #{mIdx + 1}</span>
-                          <Button variant="ghost" size="sm" onClick={() => removeMaterial(idx, mIdx)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          <Input placeholder="Название" value={m.name} onChange={(e) => updateMaterial(idx, mIdx, "name", e.target.value)} />
-                          <Input placeholder="Бейдж (например «TOP»)" value={m.badge || ""} onChange={(e) => updateMaterial(idx, mIdx, "badge", e.target.value)} />
-                        </div>
-                        <Textarea rows={2} placeholder="Характеристики" value={m.specs} onChange={(e) => updateMaterial(idx, mIdx, "specs", e.target.value)} />
-                        <div className="flex items-center gap-3">
-                          {m.photo && <img src={m.photo} alt="" className="h-12 w-16 object-cover rounded border" />}
-                          <label className="inline-flex items-center gap-2 cursor-pointer text-sm border rounded px-3 py-1.5 hover:bg-background">
-                            <Upload className="w-4 h-4" /> Фото
-                            <input type="file" accept="image/*" className="hidden"
-                              onChange={(e) => e.target.files?.[0] && handleMaterialPhoto(idx, mIdx, e.target.files[0])} />
-                          </label>
-                          {m.photo && (
-                            <Button variant="ghost" size="sm" onClick={() => updateMaterial(idx, mIdx, "photo", "")}>
-                              <X className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
                   {/* Галерея / примеры работ */}
                   <div
                     className={`space-y-2 rounded-lg border-2 border-dashed p-3 transition ${
@@ -621,11 +758,110 @@ const AdminContent = () => {
                         Перетащите фото сюда или нажмите «Добавить фото»
                       </div>
                     )}
-                    <p className="text-[11px] text-muted-foreground">Отображается в модалке и на детальной странице решения.</p>
+                    <p className="text-[11px] text-muted-foreground">Показываются в блоке «Примеры работ» на детальной странице услуги.</p>
                   </div>
                 </div>
                 <div className="flex justify-end pt-3 border-t">
                   <Button onClick={() => setEditingIdx(null)}>Готово</Button>
+                </div>
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
+
+      {/* Category detail dialog */}
+      <Dialog open={editingCatIdx !== null} onOpenChange={(open) => !open && setEditingCatIdx(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {editingCatIdx !== null && content.categories[editingCatIdx] && (() => {
+            const idx = editingCatIdx;
+            const cat = content.categories[idx];
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="text-base font-medium">
+                    Детальная страница категории: {cat.label || "(без названия)"}
+                    <div className="text-xs text-muted-foreground font-normal mt-1">
+                      /solutions/category/<span className="font-mono">{cat.slug || "—"}</span>
+                    </div>
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 pt-2">
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">Области применения</label>
+                    <Input
+                      placeholder="Например: Промышленность, энергетика, КИИ, госучреждения"
+                      defaultValue={(cat.areas || []).join(", ")}
+                      key={`areas-${idx}-${editingCatIdx}`}
+                      onBlur={(e) => {
+                        const areas = e.target.value.split(",").map((s) => s.trim()).filter(Boolean);
+                        setContent((prev) => {
+                          const categories = [...prev.categories];
+                          categories[idx] = { ...categories[idx], areas };
+                          return { ...prev, categories };
+                        });
+                      }}
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">Через запятую. Сохраняется при уходе из поля.</p>
+                  </div>
+
+                  <div
+                    className={`space-y-2 rounded-lg border-2 border-dashed p-3 transition ${
+                      catDragOver ? "border-primary bg-primary/5" : "border-transparent"
+                    }`}
+                    onDragOver={(e) => { e.preventDefault(); setCatDragOver(true); }}
+                    onDragLeave={() => setCatDragOver(false)}
+                    onDrop={async (e) => {
+                      e.preventDefault();
+                      setCatDragOver(false);
+                      const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith("image/"));
+                      for (const file of files) await addCategoryGalleryImage(idx, file);
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm text-muted-foreground">
+                        Примеры работ ({(cat.gallery || []).length})
+                      </label>
+                      <label className="inline-flex items-center gap-2 cursor-pointer text-sm border rounded px-3 py-1.5 hover:bg-muted">
+                        <Upload className="w-4 h-4" /> Добавить фото
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={async (e) => {
+                            const files = Array.from(e.target.files || []);
+                            for (const file of files) await addCategoryGalleryImage(idx, file);
+                            e.target.value = "";
+                          }}
+                        />
+                      </label>
+                    </div>
+                    {(cat.gallery || []).length > 0 ? (
+                      <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                        {(cat.gallery || []).map((url, gIdx) => (
+                          <div key={gIdx} className="relative group">
+                            <img src={url} alt="" className="w-full aspect-square object-cover rounded border" />
+                            <button
+                              type="button"
+                              onClick={() => removeCategoryGalleryImage(idx, gIdx)}
+                              className="absolute top-1 right-1 w-6 h-6 bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 text-[13px] text-muted-foreground">
+                        Перетащите фото сюда или нажмите «Добавить фото»
+                      </div>
+                    )}
+                    <p className="text-[11px] text-muted-foreground">Отображаются в блоке «Примеры работ» на странице категории.</p>
+                  </div>
+                </div>
+                <div className="flex justify-end pt-3 border-t">
+                  <Button onClick={() => setEditingCatIdx(null)}>Готово</Button>
                 </div>
               </>
             );

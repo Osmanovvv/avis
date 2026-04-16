@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import logoAvis from "@/assets/logo-avis.webp";
 import { useContent } from "@/hooks/use-content";
 import { useSettings } from "@/hooks/use-settings";
+import MegaMenu from "@/components/MegaMenu";
 
 const navItems = [
   { label: "Главная", path: "/" },
@@ -47,6 +48,7 @@ const HamburgerIcon = ({ open }: { open: boolean }) => (
 const Header = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [megaOpen, setMegaOpen] = useState(false);
   const [counterVisible, setCounterVisible] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -60,7 +62,7 @@ const Header = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+  useEffect(() => { setMobileOpen(false); setMegaOpen(false); }, [location.pathname]);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -92,17 +94,65 @@ const Header = () => {
           </div>
 
           <nav className="hidden items-center gap-1 lg:flex absolute left-1/2 -translate-x-1/2">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`px-3 py-2 text-[11px] uppercase tracking-[0.15em] font-light transition-colors duration-200
-                  ${location.pathname === item.path ? "text-foreground" : "text-muted-foreground hover:text-accent"}`}
-                style={location.pathname === item.path ? { color: "#f5a623" } : undefined}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const isServices = item.path === "/solutions";
+              const isActive = isServices
+                ? (location.pathname === "/solutions" || location.pathname.startsWith("/solutions/"))
+                : location.pathname === item.path;
+
+              if (!isServices) {
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`px-3 py-2 text-[11px] uppercase tracking-[0.15em] font-light transition-colors duration-200
+                      ${isActive ? "text-foreground" : "text-muted-foreground hover:text-accent"}`}
+                    style={isActive ? { color: "#f5a623" } : undefined}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              }
+
+              return (
+                <div
+                  key={item.path}
+                  className="relative"
+                  onMouseEnter={() => setMegaOpen(true)}
+                  onMouseLeave={() => setMegaOpen(false)}
+                >
+                  <Link
+                    to={item.path}
+                    className={`px-3 py-2 text-[11px] uppercase tracking-[0.15em] font-light transition-colors duration-200 inline-block
+                      ${isActive ? "text-foreground" : "text-muted-foreground hover:text-accent"}`}
+                    style={isActive ? { color: "#f5a623" } : undefined}
+                  >
+                    {item.label}
+                  </Link>
+                  {megaOpen && (
+                    <div
+                      className="absolute"
+                      style={{
+                        top: "100%",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        paddingTop: 8,
+                        zIndex: 1000,
+                        animation: "megaFadeIn 0.18s ease-out",
+                      }}
+                    >
+                      <MegaMenu onNavigate={() => setMegaOpen(false)} />
+                    </div>
+                  )}
+                  <style>{`
+                    @keyframes megaFadeIn {
+                      from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+                      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    }
+                  `}</style>
+                </div>
+              );
+            })}
           </nav>
 
           <div className="hidden lg:flex items-center gap-4 ml-auto">

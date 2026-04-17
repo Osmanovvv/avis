@@ -83,10 +83,18 @@ const SolutionsCatalog = () => {
                       {cat.description}
                     </span>
                   )}
-                  <div className="absolute inset-x-0 bottom-0 p-4 md:p-5 flex items-end justify-between">
+                  <div className="absolute inset-x-0 bottom-0 p-4 md:p-5 flex items-end justify-between gap-3">
                     <span
-                      className="flex-1 pr-3 text-white font-semibold"
-                      style={{ fontSize: isMobile ? "1.1rem" : "1.15rem", letterSpacing: "0.01em" }}
+                      className="flex-1 text-white font-bold"
+                      style={{
+                        fontSize: isMobile ? "1.25rem" : "1.4rem",
+                        lineHeight: 1.2,
+                        letterSpacing: "0.01em",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
                     >
                       {cat.label}
                     </span>

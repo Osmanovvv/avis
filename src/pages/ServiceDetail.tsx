@@ -106,7 +106,7 @@ const ServiceDetail = () => {
       <RequestModal open={modalOpen} onClose={() => setModalOpen(false)} subcategoryTitle={modalTitle} />
 
       {/* HERO */}
-      <section className="relative overflow-hidden flex items-end" style={{ height: isMobile ? 300 : 520, marginBottom: isMobile ? 32 : 48 }}>
+      <section className="relative overflow-hidden flex items-end" style={{ height: isMobile ? 300 : 520 }}>
         {service.heroImage && (
           <img src={service.heroImage} alt={service.h1} className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: "center" }} />
         )}
@@ -141,7 +141,7 @@ const ServiceDetail = () => {
       </section>
 
       {subtitle && (
-        <section style={{ padding: isMobile ? "0 16px" : "0 40px", marginBottom: isMobile ? 32 : 48, marginTop: isMobile ? -16 : -24 }}>
+        <section style={{ padding: isMobile ? "32px 16px 0" : "48px 40px 0", marginBottom: isMobile ? 32 : 48 }}>
           <div className="flex items-center gap-3" style={{ marginBottom: 14 }}>
             <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4a7fa5" }}>
               Описание

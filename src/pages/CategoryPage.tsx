@@ -57,9 +57,9 @@ const CategoryPage = () => {
       <RequestModal open={modalOpen} onClose={() => setModalOpen(false)} subcategoryTitle={modalTitle} />
 
       {/* HERO */}
-      <section className="relative overflow-hidden flex items-end" style={{ height: isMobile ? 220 : 340 }}>
+      <section className="relative overflow-hidden flex items-end" style={{ height: isMobile ? 300 : 520 }}>
         {heroImage && (
-          <img src={heroImage} alt={category.label} className="absolute inset-0 w-full h-full object-cover" loading="eager" />
+          <img src={heroImage} alt={category.label} className="absolute inset-0 w-full h-full object-cover" loading="eager" style={{ objectPosition: "center" }} />
         )}
         <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.55)" }} />
         <div className="relative z-10 w-full" style={{ padding: isMobile ? "0 20px 24px" : "0 6vw 32px" }}>
@@ -91,16 +91,44 @@ const CategoryPage = () => {
               {category.label}
             </h1>
           </div>
-          {category.shortDesc && (
-            <p style={{ fontSize: 15, color: "#c0cdd8", margin: 0, maxWidth: 560, lineHeight: 1.5, marginTop: 10 }}>
-              {category.shortDesc}
-            </p>
-          )}
         </div>
       </section>
 
+      {category.shortDesc && (
+        <section style={{ padding: isMobile ? "32px 16px 0" : "48px 40px 0", marginBottom: isMobile ? 32 : 48 }}>
+          <div className="flex items-center gap-3" style={{ marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4a7fa5" }}>
+              Описание
+            </span>
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+          </div>
+          <p style={{ fontSize: isMobile ? 15 : 17, color: "#c0cdd8", margin: 0, lineHeight: 1.55, paddingLeft: isMobile ? 12 : 20 }}>
+            {category.shortDesc}
+          </p>
+        </section>
+      )}
+
+      {(category as any).materials && (category as any).materials.length > 0 && (
+        <section style={{ padding: isMobile ? "0 16px" : "0 40px", marginBottom: isMobile ? 32 : 48 }}>
+          <div className="flex items-center gap-3" style={{ marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4a7fa5" }}>
+              Материалы
+            </span>
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+          </div>
+          <ul style={{ listStyle: "none", margin: 0, padding: 0, paddingLeft: isMobile ? 12 : 20 }}>
+            {(category as any).materials.map((m: any, i: number) => (
+              <li key={i} style={{ display: "flex", gap: 10, fontSize: isMobile ? 15 : 17, color: "#c0cdd8", lineHeight: 1.55, padding: "4px 0" }}>
+                <span style={{ color: "#4a7fa5", flexShrink: 0 }}>—</span>
+                <span>{m.specs ? `${m.name} (${m.specs})` : m.name}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* CARDS */}
-      <section style={{ background: "#090b0e", padding: isMobile ? "32px 16px 40px" : "48px 40px 60px" }}>
+      <section style={{ background: "#090b0e", padding: isMobile ? "0 16px 40px" : "0 40px 60px" }}>
         <div className="flex items-center gap-3" style={{ marginBottom: 20 }}>
           <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4a7fa5" }}>
             УСЛУГИ — {cards.length}
@@ -155,34 +183,36 @@ const CategoryPage = () => {
 
       {/* AREAS */}
       {category.areas && category.areas.length > 0 && (
-        <section style={{ background: "#090b0e", padding: isMobile ? "0 20px 40px" : "0 6vw 56px" }}>
-          <div style={{ background: "rgba(255,255,255,0.02)", borderRadius: 12, padding: isMobile ? "20px" : "28px 32px" }}>
-            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#4a7fa5", display: "block", marginBottom: 12 }}>
+        <section style={{ padding: isMobile ? "0 16px" : "0 40px", marginBottom: isMobile ? 32 : 48 }}>
+          <div className="flex items-center gap-3" style={{ marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4a7fa5" }}>
               Области применения
             </span>
-            <div className="flex flex-wrap gap-2">
-              {category.areas.map((a) => (
-                <span
-                  key={a}
-                  style={{ background: "rgba(74,127,165,0.1)", border: "1px solid rgba(74,127,165,0.25)", padding: "6px 14px", borderRadius: 20, fontSize: 13, color: "#c0cdd8" }}
-                >
-                  {a}
-                </span>
-              ))}
-            </div>
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+          </div>
+          <div className="flex flex-wrap gap-2" style={{ paddingLeft: isMobile ? 12 : 20 }}>
+            {category.areas.map((a) => (
+              <span
+                key={a}
+                style={{ background: "rgba(74,127,165,0.1)", border: "1px solid rgba(74,127,165,0.25)", padding: "7px 16px", borderRadius: 20, fontSize: 15, color: "#c0cdd8" }}
+              >
+                {a}
+              </span>
+            ))}
           </div>
         </section>
       )}
 
       {/* EXAMPLES (gallery) */}
       {category.gallery && category.gallery.length > 0 && (
-        <section style={{ background: "#090b0e", padding: isMobile ? "0 20px 40px" : "0 6vw 56px" }}>
-          <FadeIn>
-            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#4a7fa5", display: "block", marginBottom: 16 }}>
+        <section style={{ padding: isMobile ? "0 16px" : "0 40px", marginBottom: isMobile ? 32 : 48 }}>
+          <div className="flex items-center gap-3" style={{ marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4a7fa5" }}>
               Примеры работ
             </span>
-          </FadeIn>
-          <div className={`grid gap-3 ${isMobile ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-3"}`}>
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+          </div>
+          <div className={`grid gap-3 ${isMobile ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-3"}`} style={{ paddingLeft: isMobile ? 12 : 20 }}>
             {category.gallery.map((src, i) => (
               <div
                 key={i}

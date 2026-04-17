@@ -884,6 +884,29 @@ const AdminContent = () => {
                     <p className="text-[11px] text-muted-foreground mt-1">Через запятую. Сохраняется при уходе из поля.</p>
                   </div>
 
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">Материалы</label>
+                    <Textarea
+                      placeholder={"Каждый пункт — с новой строки. Например:\nСталь оцинкованная\nАрматура Ø12 мм\nБетон М400"}
+                      rows={5}
+                      defaultValue={(((cat as any).materials) || []).map((m: any) => (m.specs ? `${m.name} (${m.specs})` : m.name)).join("\n")}
+                      key={`cat-materials-${idx}-${editingCatIdx}`}
+                      onBlur={(e) => {
+                        const items = e.target.value
+                          .split("\n")
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                          .map((s) => ({ name: s, specs: "" }));
+                        setContent((prev) => {
+                          const categories = [...prev.categories];
+                          categories[idx] = { ...categories[idx], materials: items } as any;
+                          return { ...prev, categories };
+                        });
+                      }}
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">Каждый пункт — с новой строки. Сохраняется при уходе из поля.</p>
+                  </div>
+
                   <div
                     className={`space-y-2 rounded-lg border-2 border-dashed p-3 transition ${
                       catDragOver ? "border-primary bg-primary/5" : "border-transparent"

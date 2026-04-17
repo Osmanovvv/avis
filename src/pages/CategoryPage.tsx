@@ -111,7 +111,6 @@ const CategoryPage = () => {
           <div className="grid" style={{ gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(420px, 1fr))", gap: 14 }}>
             {cards.map((card: any, i: number) => {
               const cardSlug = card.slug || slugifyRu(card.name);
-              const cardDesc = card.shortDesc || card.description || "";
               return (
                 <FadeIn key={cardSlug || i} delay={i * 0.06}>
                   <div
@@ -126,15 +125,12 @@ const CategoryPage = () => {
                     )}
                     <div className="absolute inset-0" style={{ zIndex: 1, background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.1) 100%)" }} />
                     <div className="absolute bottom-0 left-0 right-0" style={{ zIndex: 2, padding: 20 }}>
-                      <span style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.55)", marginBottom: 6, display: "block" }}>
+                      <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(255,255,255,0.6)", marginBottom: 10, display: "block" }}>
                         {category.label}
                       </span>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fff", lineHeight: 1.3, margin: "0 0 6px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                      <h3 style={{ fontSize: 20, fontWeight: 700, color: "#fff", lineHeight: 1.25, margin: "0 0 14px", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                         {card.name}
                       </h3>
-                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.5, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                        {cardDesc}
-                      </p>
                       <div className="flex items-center justify-end">
                         <button
                           onClick={(e) => { e.stopPropagation(); openModal(card.name); }}

@@ -770,6 +770,25 @@ const AdminContent = () => {
                     />
                     <p className="text-[11px] text-muted-foreground mt-1">Через запятую. Выводятся как теги в блоке «Области применения» на детальной странице.</p>
                   </div>
+
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1 block">Материалы</label>
+                    <Textarea
+                      placeholder={"Каждый пункт — с новой строки. Например:\nТрос оцинкованный Ø4–8 мм\nКанат 50×50 или 100×100 мм\nСтолбы: профтруба 60×60/80×80 мм"}
+                      rows={5}
+                      defaultValue={(detail.materials || []).map((m) => (m.specs ? `${m.name} (${m.specs})` : m.name)).join("\n")}
+                      key={`materials-${idx}-${editingIdx}`}
+                      onBlur={(e) => {
+                        const items = e.target.value
+                          .split("\n")
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                          .map((s) => ({ name: s, specs: "" }));
+                        updateProductDetail(idx, "materials", items);
+                      }}
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">Каждый пункт — с новой строки. Сохраняется при уходе из поля.</p>
+                  </div>
                   {/* Галерея / примеры работ */}
                   <div
                     className={`space-y-2 rounded-lg border-2 border-dashed p-3 transition ${

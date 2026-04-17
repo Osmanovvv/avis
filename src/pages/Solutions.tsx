@@ -34,7 +34,6 @@ const EliteSubCard = ({
   const navigate = useNavigate();
   const slug = card.slug || "";
   const title = card.name || "";
-  const desc = card.shortDesc || card.description || "";
 
   return (
     <div
@@ -66,11 +65,11 @@ const EliteSubCard = ({
       <div className="absolute bottom-0 left-0 right-0" style={{ zIndex: 2, padding: 20 }}>
         <span
           style={{
-            fontSize: 9,
+            fontSize: 11,
             textTransform: "uppercase",
-            letterSpacing: "0.12em",
-            color: "rgba(255,255,255,0.55)",
-            marginBottom: 6,
+            letterSpacing: "0.14em",
+            color: "rgba(255,255,255,0.6)",
+            marginBottom: 10,
             display: "block",
           }}
         >
@@ -78,32 +77,18 @@ const EliteSubCard = ({
         </span>
         <div
           style={{
-            fontSize: 15,
+            fontSize: 20,
             fontWeight: 700,
             color: "#fff",
-            lineHeight: 1.3,
-            marginBottom: 6,
+            lineHeight: 1.25,
+            marginBottom: 14,
             display: "-webkit-box",
-            WebkitLineClamp: 2,
+            WebkitLineClamp: 3,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
           }}
         >
           {title}
-        </div>
-        <div
-          style={{
-            fontSize: 12,
-            color: "rgba(255,255,255,0.6)",
-            lineHeight: 1.5,
-            marginBottom: 12,
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
-          {desc}
         </div>
         <div className="flex items-center justify-end">
           <button

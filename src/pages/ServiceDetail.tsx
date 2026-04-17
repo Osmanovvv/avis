@@ -106,9 +106,9 @@ const ServiceDetail = () => {
       <RequestModal open={modalOpen} onClose={() => setModalOpen(false)} subcategoryTitle={modalTitle} />
 
       {/* HERO */}
-      <section className="relative overflow-hidden flex items-end" style={{ height: isMobile ? 220 : 340, marginBottom: isMobile ? 32 : 48 }}>
+      <section className="relative overflow-hidden flex items-end" style={{ height: isMobile ? 300 : 520, marginBottom: isMobile ? 32 : 48 }}>
         {service.heroImage && (
-          <img src={service.heroImage} alt={service.h1} className="absolute inset-0 w-full h-full object-cover" />
+          <img src={service.heroImage} alt={service.h1} className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: "center" }} />
         )}
         <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.55)" }} />
         <div className="relative z-10 w-full" style={{ padding: isMobile ? "0 20px 24px" : "0 6vw 32px" }}>
@@ -137,25 +137,54 @@ const ServiceDetail = () => {
               {service.h1}
             </h1>
           </div>
-          {subtitle && (
-            <p style={{ fontSize: 15, color: "#c0cdd8", margin: 0, maxWidth: 560, lineHeight: 1.5, marginTop: 10 }}>{subtitle}</p>
-          )}
         </div>
       </section>
+
+      {subtitle && (
+        <section style={{ padding: isMobile ? "0 16px" : "0 40px", marginBottom: isMobile ? 32 : 48, marginTop: isMobile ? -16 : -24 }}>
+          <div className="flex items-center gap-3" style={{ marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4a7fa5" }}>
+              Описание
+            </span>
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+          </div>
+          <p style={{ fontSize: isMobile ? 15 : 17, color: "#c0cdd8", margin: 0, lineHeight: 1.55, paddingLeft: isMobile ? 12 : 20 }}>
+            {subtitle}
+          </p>
+        </section>
+      )}
+
+      {service.materials && service.materials.length > 0 && (
+        <section style={{ padding: isMobile ? "0 16px" : "0 40px", marginBottom: isMobile ? 32 : 48 }}>
+          <div className="flex items-center gap-3" style={{ marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4a7fa5" }}>
+              Материалы
+            </span>
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+          </div>
+          <ul style={{ listStyle: "none", margin: 0, padding: 0, paddingLeft: isMobile ? 12 : 20 }}>
+            {service.materials.map((m: any, i: number) => (
+              <li key={i} style={{ display: "flex", gap: 10, fontSize: isMobile ? 15 : 17, color: "#c0cdd8", lineHeight: 1.55, padding: "4px 0" }}>
+                <span style={{ color: "#4a7fa5", flexShrink: 0 }}>—</span>
+                <span>{m.specs ? `${m.name} (${m.specs})` : m.name}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* CARDS — другие услуги той же категории */}
       {siblings.length > 0 && (
         <section style={{ background: "#090b0e", padding: isMobile ? "0 16px 40px" : "0 40px 60px" }}>
           <div className="flex items-center gap-3" style={{ marginBottom: 20 }}>
             <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4a7fa5" }}>
-              УСЛУГИ — {siblings.length}
+              Другие услуги в категории — {catLabel}
             </span>
             <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
           </div>
           <div className="grid" style={{ gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(420px, 1fr))", gap: 14 }}>
             {siblings.map((card: any, i: number) => {
               const cardSlug = card.slug || slugifyRu(card.name);
-              const cardDesc = card.shortDesc || card.description || "";
               return (
                 <FadeIn key={cardSlug || i} delay={i * 0.06}>
                   <div
@@ -170,15 +199,12 @@ const ServiceDetail = () => {
                     )}
                     <div className="absolute inset-0" style={{ zIndex: 1, background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.1) 100%)" }} />
                     <div className="absolute bottom-0 left-0 right-0" style={{ zIndex: 2, padding: 20 }}>
-                      <span style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.55)", marginBottom: 6, display: "block" }}>
+                      <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(255,255,255,0.6)", marginBottom: 10, display: "block" }}>
                         {catLabel}
                       </span>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fff", lineHeight: 1.3, margin: "0 0 6px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                      <h3 style={{ fontSize: 20, fontWeight: 700, color: "#fff", lineHeight: 1.25, margin: "0 0 14px", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                         {card.name}
                       </h3>
-                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.5, margin: "0 0 12px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                        {cardDesc}
-                      </p>
                       <div className="flex items-center justify-end">
                         <button
                           onClick={(e) => { e.stopPropagation(); openModal(card.name); }}
@@ -199,34 +225,36 @@ const ServiceDetail = () => {
 
       {/* Области применения (теги) */}
       {service.subcategories && service.subcategories.length > 0 && (
-        <section style={{ background: "#090b0e", padding: isMobile ? "0 20px 40px" : "0 6vw 56px" }}>
-          <div style={{ background: "rgba(255,255,255,0.02)", borderRadius: 12, padding: isMobile ? "20px" : "28px 32px" }}>
-            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#4a7fa5", display: "block", marginBottom: 12 }}>
+        <section style={{ padding: isMobile ? "0 16px" : "0 40px", marginBottom: isMobile ? 32 : 48 }}>
+          <div className="flex items-center gap-3" style={{ marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4a7fa5" }}>
               Области применения
             </span>
-            <div className="flex flex-wrap gap-2">
-              {service.subcategories.map((tag) => (
-                <span
-                  key={tag}
-                  style={{ background: "rgba(74,127,165,0.1)", border: "1px solid rgba(74,127,165,0.25)", padding: "6px 14px", borderRadius: 20, fontSize: 13, color: "#c0cdd8" }}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+          </div>
+          <div className="flex flex-wrap gap-2" style={{ paddingLeft: isMobile ? 12 : 20 }}>
+            {service.subcategories.map((tag) => (
+              <span
+                key={tag}
+                style={{ background: "rgba(74,127,165,0.1)", border: "1px solid rgba(74,127,165,0.25)", padding: "7px 16px", borderRadius: 20, fontSize: 15, color: "#c0cdd8" }}
+              >
+                {tag}
+              </span>
+            ))}
           </div>
         </section>
       )}
 
       {/* Примеры работ */}
       {service.gallery && service.gallery.length > 0 && (
-        <section style={{ background: "#090b0e", padding: isMobile ? "0 20px 40px" : "0 6vw 56px" }}>
-          <FadeIn>
-            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#4a7fa5", display: "block", marginBottom: 16 }}>
+        <section style={{ padding: isMobile ? "0 16px" : "0 40px", marginBottom: isMobile ? 32 : 48 }}>
+          <div className="flex items-center gap-3" style={{ marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4a7fa5" }}>
               Примеры работ
             </span>
-          </FadeIn>
-          <div className={`grid gap-3 ${isMobile ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-3"}`}>
+            <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.06)" }} />
+          </div>
+          <div className={`grid gap-3 ${isMobile ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-3"}`} style={{ paddingLeft: isMobile ? 12 : 20 }}>
             {service.gallery.map((src, i) => (
               <div
                 key={i}

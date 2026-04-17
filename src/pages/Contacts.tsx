@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useCallback, useLayoutEffect } from "react";
 import { Link } from "react-router-dom";
 import FadeIn from "@/components/FadeIn";
 import { Phone, Send, Mail, MapPin, Clock } from "lucide-react";
@@ -97,17 +97,6 @@ const Contacts = () => {
   }, []);
 
   const formRef = useRef<HTMLFormElement>(null);
-  const [showStickyBar, setShowStickyBar] = useState(true);
-
-  useEffect(() => {
-    if (!isMobile || !formRef.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setShowStickyBar(!entry.isIntersecting),
-      { threshold: 0.1 }
-    );
-    observer.observe(formRef.current);
-    return () => observer.disconnect();
-  }, [isMobile]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,7 +131,7 @@ const Contacts = () => {
   } as const;
 
   return (
-    <div style={{ background: "#0d0f12", minHeight: "100vh", paddingBottom: isMobile ? 80 : 0 }}>
+    <div style={{ background: "#0d0f12", minHeight: "100vh" }}>
       <SEO
         title="Контакты АВИС: телефон, адрес, реквизиты | Защита от БПЛА"
         description="Контакты компании АВИС: телефон, email, Telegram, адрес офиса, реквизиты. Запросите бесплатный аудит защиты объекта от БПЛА. Ответим за 2 часа."
@@ -381,32 +370,6 @@ const Contacts = () => {
         </FadeIn>
       </div>
 
-      {/* Mobile sticky bottom bar */}
-      {isMobile && showStickyBar && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 100,
-            background: "rgba(13,15,18,0.95)",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-            padding: "12px 20px",
-            borderTop: "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
-          <div className="flex gap-[10px]">
-            <a href={cTelHref} className="btn-gold flex-1 flex items-center justify-center gap-2 rounded-lg font-semibold" style={{ height: 48, fontSize: 13 }}>
-              <Phone size={16} /> Позвонить
-            </a>
-            <a href={cTgHref} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 rounded-lg font-semibold transition-all" style={{ height: 48, background: "#0088cc", color: "#ffffff", fontSize: 13 }}>
-              <Send size={16} /> Telegram
-            </a>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

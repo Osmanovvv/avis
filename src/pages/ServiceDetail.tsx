@@ -106,7 +106,7 @@ const ServiceDetail = () => {
       <RequestModal open={modalOpen} onClose={() => setModalOpen(false)} subcategoryTitle={modalTitle} />
 
       {/* HERO */}
-      <section className="relative overflow-hidden flex items-end" style={{ height: isMobile ? 220 : 340 }}>
+      <section className="relative overflow-hidden flex items-end" style={{ height: isMobile ? 220 : 340, marginBottom: isMobile ? 32 : 48 }}>
         {service.heroImage && (
           <img src={service.heroImage} alt={service.h1} className="absolute inset-0 w-full h-full object-cover" />
         )}
@@ -145,7 +145,7 @@ const ServiceDetail = () => {
 
       {/* CARDS — другие услуги той же категории */}
       {siblings.length > 0 && (
-        <section style={{ background: "#090b0e", padding: isMobile ? "32px 16px 40px" : "48px 40px 60px" }}>
+        <section style={{ background: "#090b0e", padding: isMobile ? "0 16px 40px" : "0 40px 60px" }}>
           <div className="flex items-center gap-3" style={{ marginBottom: 20 }}>
             <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4a7fa5" }}>
               УСЛУГИ — {siblings.length}

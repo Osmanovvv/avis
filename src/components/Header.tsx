@@ -232,33 +232,80 @@ const Header = () => {
             </button>
 
             <div className="h-[52px] flex-shrink-0" />
-            <div className="flex-1 flex flex-col justify-center px-5" onClick={(e) => e.stopPropagation()}>
-              <nav className="space-y-0">
-                {navItems.map((item, i) => (
-                  <motion.div
-                    key={item.path}
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05, duration: 0.3 }}
-                  >
-                    <Link
-                      to={item.path}
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center transition-colors"
-                      style={{
-                        fontSize: "22px",
-                        fontWeight: 600,
-                        letterSpacing: "0.04em",
-                        padding: "18px 0",
-                        borderBottom: "1px solid rgba(255,255,255,0.07)",
-                        color: location.pathname === item.path ? "#f5a623" : "#ffffff",
-                      }}
-                    >
-                      {item.label}
-                    </Link>
-                  </motion.div>
-                ))}
-              </nav>
+            <div className="flex-1 flex flex-col overflow-y-auto px-5 pt-6 pb-8" onClick={(e) => e.stopPropagation()}>
+              <motion.div
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0, duration: 0.3 }}
+              >
+                <Link
+                  to="/"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center transition-colors"
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 600,
+                    letterSpacing: "0.04em",
+                    padding: "18px 0",
+                    borderBottom: "1px solid rgba(255,255,255,0.07)",
+                    color: location.pathname === "/" ? "#f5a623" : "#ffffff",
+                  }}
+                >
+                  Главная
+                </Link>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.05, duration: 0.3 }}
+              >
+                <MegaMenu mobile onNavigate={() => setMobileOpen(false)} />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1, duration: 0.3 }}
+              >
+                <Link
+                  to="/about"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center transition-colors"
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 600,
+                    letterSpacing: "0.04em",
+                    padding: "18px 0",
+                    borderBottom: "1px solid rgba(255,255,255,0.07)",
+                    color: location.pathname === "/about" ? "#f5a623" : "#ffffff",
+                  }}
+                >
+                  О компании
+                </Link>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15, duration: 0.3 }}
+              >
+                <Link
+                  to="/contacts"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center transition-colors"
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 600,
+                    letterSpacing: "0.04em",
+                    padding: "18px 0",
+                    borderBottom: "1px solid rgba(255,255,255,0.07)",
+                    color: location.pathname === "/contacts" ? "#f5a623" : "#ffffff",
+                  }}
+                >
+                  Контакты
+                </Link>
+              </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 16 }}

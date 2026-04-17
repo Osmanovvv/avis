@@ -60,9 +60,18 @@ const VideoPlayer = ({ video }: { video: VideoItem }) => {
 
   const goFullscreen = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    const v = videoRef.current;
+    const v = videoRef.current as any;
     if (!v) return;
+    // Начинаем воспроизведение — iOS открывает полноэкранный режим только для играющего видео.
+    if (v.paused) {
+      try { v.play(); setPlaying(true); setShowOverlay(false); } catch {}
+    }
+    if (typeof v.webkitEnterFullscreen === "function") {
+      v.webkitEnterFullscreen();
+      return;
+    }
     if (v.requestFullscreen) v.requestFullscreen();
+    else if (v.webkitRequestFullscreen) v.webkitRequestFullscreen();
   }, []);
 
   return (
@@ -75,7 +84,7 @@ const VideoPlayer = ({ video }: { video: VideoItem }) => {
         }}
         onClick={togglePlay}
       >
-        <div className="aspect-[16/9]">
+        <div className="aspect-[16/9] relative">
           <video
             ref={videoRef}
             src={video.src}
@@ -85,8 +94,20 @@ const VideoPlayer = ({ video }: { video: VideoItem }) => {
             playsInline
             preload="metadata"
             className="h-full w-full object-cover"
+            onPlay={() => { setPlaying(true); setShowOverlay(false); }}
+            onPause={() => { setPlaying(false); setShowOverlay(true); }}
             onEnded={() => { setPlaying(false); setShowOverlay(true); }}
           />
+          {/* Poster fallback для iOS — нативный poster-атрибут после загрузки метаданных
+              заменяется первым кадром видео, поэтому дублируем его как <img>. */}
+          {showOverlay && video.poster && (
+            <img
+              src={video.poster}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            />
+          )}
         </div>
 
         {/* Play overlay */}

@@ -244,14 +244,20 @@ const AdminContent = () => {
     }
   };
 
-  const addHomeCard = () => {
-    setContent((prev) => ({
-      ...prev,
-      products: [...prev.products, { name: "", description: "", image: "" }],
-    }));
+  const addCardInCategory = (catId: string) => {
+    let newIdx = -1;
+    setContent((prev) => {
+      newIdx = prev.products.length;
+      return {
+        ...prev,
+        products: [...prev.products, { name: "", description: "", image: "", category: catId }],
+      };
+    });
+    // открываем модалку на новой карточке
+    setTimeout(() => setEditingIdx(newIdx), 0);
   };
 
-  const removeHomeCard = (index: number) => {
+  const removeCard = (index: number) => {
     if (!confirm("Удалить карточку?")) return;
     setContent((prev) => ({
       ...prev,
@@ -259,12 +265,20 @@ const AdminContent = () => {
     }));
   };
 
-  const moveHomeCard = (index: number, dir: -1 | 1) => {
-    const target = index + dir;
+  // Перемещение карточки вверх/вниз в пределах её категории (свапается с ближайшим
+  // соседом того же category в заданном направлении).
+  const moveProductInCategory = (index: number, dir: -1 | 1) => {
     setContent((prev) => {
-      if (target < 0 || target >= prev.products.length) return prev;
       const products = [...prev.products];
-      [products[index], products[target]] = [products[target], products[index]];
+      const cat = products[index]?.category;
+      const siblings = products
+        .map((p, i) => ({ p, i }))
+        .filter((x) => x.p.category === cat);
+      const localIdx = siblings.findIndex((x) => x.i === index);
+      const targetLocal = localIdx + dir;
+      if (targetLocal < 0 || targetLocal >= siblings.length) return prev;
+      const targetGlobal = siblings[targetLocal].i;
+      [products[index], products[targetGlobal]] = [products[targetGlobal], products[index]];
       return { ...prev, products };
     });
   };
@@ -305,7 +319,6 @@ const AdminContent = () => {
           image: "",
           shortDesc: "",
           order: (prev.categories.length > 0 ? Math.max(...prev.categories.map((c) => c.order ?? 0)) : 0) + 1,
-          featured: true,
         },
       ],
     }));
@@ -534,99 +547,108 @@ const AdminContent = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Карточки услуг в этой категории */}
+              {(() => {
+                const siblings = content.products
+                  .map((p, originalIdx) => ({ p, originalIdx }))
+                  .filter(({ p }) => p.category === cat.id);
+                return (
+                  <div className="ml-[108px] mt-2 pl-3 border-l-2 border-border/60 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Карточки в категории ({siblings.length})
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => addCardInCategory(cat.id)}
+                        className="gap-1 h-7 text-xs"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Добавить карточку
+                      </Button>
+                    </div>
+                    {siblings.length === 0 ? (
+                      <p className="text-[12px] text-muted-foreground py-1">
+                        Пусто. Нажмите «Добавить карточку».
+                      </p>
+                    ) : (
+                      siblings.map(({ p, originalIdx }, localIdx) => (
+                        <div
+                          key={originalIdx}
+                          className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-muted/40"
+                        >
+                          {p.image ? (
+                            <img
+                              src={p.image}
+                              alt=""
+                              className="w-10 h-10 rounded object-cover border shrink-0"
+                              width={40}
+                              height={40}
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded border border-dashed border-border bg-muted/30 shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm truncate">
+                              {p.name || <span className="text-muted-foreground italic">без названия</span>}
+                            </div>
+                            {p.slug && (
+                              <div className="text-[10px] text-muted-foreground font-mono truncate">
+                                /solutions/{p.slug}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex gap-0.5 shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="w-7 h-7"
+                              disabled={localIdx === 0}
+                              onClick={() => moveProductInCategory(originalIdx, -1)}
+                              title="Вверх"
+                            >
+                              <ChevronUp className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="w-7 h-7"
+                              disabled={localIdx === siblings.length - 1}
+                              onClick={() => moveProductInCategory(originalIdx, 1)}
+                              title="Вниз"
+                            >
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="w-7 h-7"
+                              onClick={() => setEditingIdx(originalIdx)}
+                              title="Редактировать"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="w-7 h-7"
+                              onClick={() => removeCard(originalIdx)}
+                              title="Удалить"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           ))}
         </CardContent>
       </Card>
-
-      {/* Solution cards (home — Наши решения) */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div>
-              <CardTitle className="text-base font-medium">Карточки решений</CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">
-                Отображаются в блоке «Наши решения» на главной и на странице /solutions. Добавляйте/удаляйте сколько нужно. Порядок — стрелками ↑↓.
-              </p>
-            </div>
-            <Button variant="outline" size="sm" onClick={addHomeCard} className="gap-1">
-              <Plus className="w-4 h-4" /> Карточка
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {content.products.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Нет карточек. Нажмите «+ Карточка».
-            </p>
-          )}
-          {content.products.map((product, i) => (
-            <div key={i} className="space-y-2 pb-4 border-b border-border/50 last:border-0 last:pb-0">
-              <div className="flex items-center justify-between">
-                <label className="text-sm text-muted-foreground">Карточка {i + 1}</label>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="w-7 h-7" disabled={i === 0} onClick={() => moveHomeCard(i, -1)} title="Вверх">
-                    <ChevronUp className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="w-7 h-7" disabled={i === content.products.length - 1} onClick={() => moveHomeCard(i, 1)} title="Вниз">
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => removeHomeCard(i)} title="Удалить">
-                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                {product.image ? (
-                  <div className="relative w-24 h-[72px] rounded border border-border overflow-hidden shrink-0">
-                    <img src={product.image} alt="" className="w-full h-full object-cover" width={96} height={72} />
-                    <button
-                      type="button"
-                      onClick={() => updateProduct(i, "image", "")}
-                      className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80"
-                    >
-                      <X className="w-3 h-3 text-white" />
-                    </button>
-                  </div>
-                ) : (
-                  <label className="w-24 h-[72px] rounded border-2 border-dashed border-border hover:border-muted-foreground flex flex-col items-center justify-center cursor-pointer shrink-0">
-                    <Upload className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-[10px] text-muted-foreground mt-0.5">Фото</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleProductImage(i, f); e.target.value = ""; }} />
-                  </label>
-                )}
-                <div className="flex-1 space-y-2">
-                  <Input placeholder="Заголовок" value={product.name} onChange={(e) => updateProduct(i, "name", e.target.value)} />
-                  <Input placeholder="Короткое описание (плашка над карточкой)" value={product.description} onChange={(e) => updateProduct(i, "description", e.target.value)} />
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={product.category || ""}
-                      onChange={(e) => updateProduct(i, "category", e.target.value)}
-                      className="flex-1 h-9 rounded-md border border-input bg-background px-3 text-sm"
-                    >
-                      <option value="">— Категория —</option>
-                      {content.categories.map((c) => (
-                        <option key={c.id} value={c.id}>{c.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex items-center justify-end pt-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditingIdx(i)}
-                      className="gap-1 whitespace-nowrap"
-                    >
-                      <FileText className="w-3.5 h-3.5" /> Детальная страница
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
 
       {/* About */}
       <Card>
@@ -684,13 +706,51 @@ const AdminContent = () => {
               <>
                 <DialogHeader>
                   <DialogTitle className="text-base font-medium">
-                    Детальная страница: {product.name || "(без названия)"}
+                    Карточка услуги: {product.name || "(без названия)"}
                     <div className="text-xs text-muted-foreground font-normal mt-1">
                       /solutions/<span className="font-mono">{effectiveSlug}</span>
                     </div>
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3 pt-2">
+                  <div className="flex items-start gap-3">
+                    {product.image ? (
+                      <div className="relative w-24 h-[72px] rounded border border-border overflow-hidden shrink-0">
+                        <img src={product.image} alt="" className="w-full h-full object-cover" width={96} height={72} />
+                        <button
+                          type="button"
+                          onClick={() => updateProduct(idx, "image", "")}
+                          className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80"
+                        >
+                          <X className="w-3 h-3 text-white" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="w-24 h-[72px] rounded border-2 border-dashed border-border hover:border-muted-foreground flex flex-col items-center justify-center cursor-pointer shrink-0">
+                        <Upload className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground mt-0.5">Фото</span>
+                        <input type="file" accept="image/*" className="hidden"
+                          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleProductImage(idx, f); e.target.value = ""; }} />
+                      </label>
+                    )}
+                    <div className="flex-1 space-y-2">
+                      <Input
+                        placeholder="Заголовок карточки"
+                        value={product.name}
+                        onChange={(e) => updateProduct(idx, "name", e.target.value)}
+                      />
+                      <select
+                        value={product.category || ""}
+                        onChange={(e) => updateProduct(idx, "category", e.target.value)}
+                        className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+                      >
+                        <option value="">— Без категории —</option>
+                        {content.categories.map((c) => (
+                          <option key={c.id} value={c.id}>{c.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                   <div>
                     <label className="text-sm text-muted-foreground mb-1 block">Подзаголовок под H1 (описание)</label>
                     <Input

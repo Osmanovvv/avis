@@ -13,10 +13,3 @@ export function useCategories(): ServiceCategory[] {
   }, [content]);
 }
 
-export function useFeaturedCategories(): ServiceCategory[] {
-  const all = useCategories();
-  return useMemo(() => {
-    const featured = all.filter((c) => c.featured);
-    return featured.length > 0 ? featured : all;
-  }, [all]);
-}
